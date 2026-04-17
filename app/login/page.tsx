@@ -1,20 +1,36 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const confirmed = searchParams.get('confirmed') === 'true'
+  const error = searchParams.get('error')
+  
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  // Check if already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        router.push('/setup')
+      }
+    }
+    checkSession()
+  }, [router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError(null)
+    setErrorMsg(null)
 
     const supabase = createClient()
     
@@ -24,12 +40,13 @@ export default function LoginPage() {
     })
 
     if (error) {
-      setError(error.message)
+      setErrorMsg(error.message)
       setLoading(false)
       return
     }
 
-    router.push('/week')
+    // Success - redirect to setup
+    router.push('/setup')
     router.refresh()
   }
 
@@ -42,6 +59,29 @@ export default function LoginPage() {
         <p className="text-muted text-center mb-8">
           Welkom terug bij Rut
         </p>
+
+        {confirmed && (
+          <div className="bg-success-50 border border-success-200 rounded-xl p-4 mb-6 text-center">
+            <div className="text-2xl mb-2">✅</div>
+            <p className="text-success font-medium">
+              E-mail bevestigd!
+            </p>
+            <p className="text-success-700 text-sm mt-1">
+              Log nu in om verder te gaan.
+            </p>
+          </div>
+        )}
+
+        {error === 'confirmation_failed' && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-center">
+            <p className="text-red-600 font-medium">
+              Bevestiging mislukt
+            </p>
+            <p className="text-red-500 text-sm mt-1">
+              Probeer opnieuw te registreren of neem contact op.
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
@@ -74,9 +114,9 @@ export default function LoginPage() {
             />
           </div>
 
-          {error && (
+          {errorMsg && (
             <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm">
-              {error}
+              {errorMsg}
             </div>
           )}
 
@@ -92,7 +132,7 @@ export default function LoginPage() {
         <p className="text-center mt-6 text-muted">
           Nog geen account?{' '}
           <a href="/setup" className="text-primary hover:underline">
-            Maak huishouden aan
+            Account aanmaken
           </a>
         </p>
       </div>

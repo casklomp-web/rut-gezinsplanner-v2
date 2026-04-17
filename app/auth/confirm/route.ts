@@ -36,8 +36,8 @@ export async function GET(request: Request) {
     })
 
     if (!error) {
-      // Email confirmed successfully
-      return NextResponse.redirect(new URL(`${next}?confirmed=true`, request.url))
+      // Email confirmed successfully - redirect to login with confirmed flag
+      return NextResponse.redirect(new URL('/login?confirmed=true', request.url))
     }
   }
 

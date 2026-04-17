@@ -42,15 +42,15 @@ export default function SetupPage() {
       
       if (session?.user) {
         setUser(session.user)
-        // If coming from email confirmation, skip to step 2
-        if (confirmed) {
-          setStep(2)
-        }
+        setStep(2) // Skip to step 2 if logged in
+      } else {
+        // Not logged in - redirect to login
+        router.push('/login')
       }
       setLoadingUser(false)
     }
     checkUser()
-  }, [confirmed])
+  }, [router])
 
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -114,7 +114,9 @@ export default function SetupPage() {
       const currentUser = session?.user
       
       if (!currentUser) {
-        throw new Error('Je bent niet ingelogd. Log opnieuw in.')
+        // Not logged in - redirect to login
+        router.push('/login?error=session_expired')
+        return
       }
 
       // Create household
