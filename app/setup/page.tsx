@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 
 interface MemberForm {
@@ -11,9 +11,13 @@ interface MemberForm {
 
 export default function SetupPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const confirmed = searchParams.get('confirmed') === 'true'
+  
   const [step, setStep] = useState(1)
   const [user, setUser] = useState<any>(null)
   const [loadingUser, setLoadingUser] = useState(true)
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false)
   
   // Step 1: Account
   const [email, setEmail] = useState('')
@@ -38,12 +42,15 @@ export default function SetupPage() {
       
       if (session?.user) {
         setUser(session.user)
-        setStep(2) // Skip to step 2 if already logged in
+        // If coming from email confirmation, skip to step 2
+        if (confirmed) {
+          setStep(2)
+        }
       }
       setLoadingUser(false)
     }
     checkUser()
-  }, [])
+  }, [confirmed])
 
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,7 +63,7 @@ export default function SetupPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/setup`,
+        emailRedirectTo: `${window.location.origin}/auth/confirm`,
       },
     })
 
@@ -67,8 +74,9 @@ export default function SetupPage() {
     }
 
     if (data.user) {
+      // Show email confirmation message
+      setShowEmailConfirmation(true)
       setUser(data.user)
-      setStep(2)
     }
     setLoading(false)
   }
@@ -189,59 +197,89 @@ export default function SetupPage() {
               Stap 1 van 3
             </p>
 
-            <form onSubmit={handleCreateAccount} className="space-y-4">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="jouw@email.nl"
-                />
+            {showEmailConfirmation ? (
+              <div className="bg-success-50 border border-success-200 rounded-xl p-6 text-center">
+                <div className="text-4xl mb-4">📧</div>
+                <h2 className="text-xl font-semibold text-success mb-2">
+                  Check je e-mail!
+                </h2>
+                <p className="text-success-700 mb-4">
+                  We hebben een bevestigingslink gestuurd naar <strong>{email}</strong>.
+                </p>
+                <p className="text-muted text-sm mb-4">
+                  Klik op de link in de e-mail om je account te bevestigen. Daarna kun je verder met het instellen van je huishouden.
+                </p>
+                <button
+                  onClick={() => setStep(2)}
+                  className="w-full bg-success text-white py-3 px-4 rounded-xl font-medium hover:bg-success-600 transition-colors"
+                >
+                  Ik heb mijn e-mail bevestigd
+                </button>
+                <p className="text-sm text-muted mt-4">
+                  Geen e-mail ontvangen? Check je spam folder of{' '}
+                  <button 
+                    onClick={() => setShowEmailConfirmation(false)}
+                    className="text-primary hover:underline"
+                  >
+                    probeer opnieuw
+                  </button>
+                </p>
               </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
-                  Wachtwoord
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Minimaal 6 tekens"
-                />
-              </div>
-
-              {error && (
-                <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm">
-                  {error}
+            ) : (
+              <form onSubmit={handleCreateAccount} className="space-y-4">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="jouw@email.nl"
+                  />
                 </div>
-              )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary text-white py-3 px-4 rounded-xl font-medium hover:bg-primary-600 transition-colors disabled:opacity-50"
-              >
-                {loading ? 'Bezig...' : 'Account aanmaken'}
-              </button>
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
+                    Wachtwoord
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="Minimaal 6 tekens"
+                  />
+                </div>
 
-              <p className="text-center text-sm text-muted">
-                Al een account?{' '}
-                <a href="/login" className="text-primary hover:underline">
-                  Inloggen
-                </a>
-              </p>
-            </form>
+                {error && (
+                  <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm">
+                    {error}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-primary text-white py-3 px-4 rounded-xl font-medium hover:bg-primary-600 transition-colors disabled:opacity-50"
+                >
+                  {loading ? 'Bezig...' : 'Account aanmaken'}
+                </button>
+
+                <p className="text-center text-sm text-muted">
+                  Al een account?{' '}
+                  <a href="/login" className="text-primary hover:underline">
+                    Inloggen
+                  </a>
+                </p>
+              </form>
+            )}
           </>
         )}
 
@@ -253,6 +291,14 @@ export default function SetupPage() {
             <p className="text-muted text-center mb-8">
               Stap 2 van 3
             </p>
+
+            {confirmed && (
+              <div className="bg-success-50 border border-success-200 rounded-xl p-4 mb-6 text-center">
+                <p className="text-success font-medium">
+                  ✅ E-mail bevestigd! Je kunt nu verder.
+                </p>
+              </div>
+            )}
 
             <form onSubmit={handleCreateHousehold} className="space-y-4">
               <div>
