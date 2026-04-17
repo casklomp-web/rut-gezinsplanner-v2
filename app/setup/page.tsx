@@ -20,10 +20,9 @@ export default function SetupPage() {
   // Step 2: Household
   const [householdName, setHouseholdName] = useState('')
   
-  // Step 3: Members
+  // Step 3: Members - start met 2, max 4
   const [members, setMembers] = useState<MemberForm[]>([
-    { name: '', role: 'admin' },
-    { name: '', role: 'member' }
+    { name: '', role: 'admin' }
   ])
   
   const [loading, setLoading] = useState(false)
@@ -117,6 +116,17 @@ export default function SetupPage() {
   const updateMember = (index: number, field: keyof MemberForm, value: string) => {
     const newMembers = [...members]
     newMembers[index] = { ...newMembers[index], [field]: value }
+    setMembers(newMembers)
+  }
+
+  const addMember = () => {
+    if (members.length >= 4) return
+    setMembers([...members, { name: '', role: 'member' }])
+  }
+
+  const removeMember = (index: number) => {
+    if (members.length <= 1) return // Minimaal 1 lid
+    const newMembers = members.filter((_, i) => i !== index)
     setMembers(newMembers)
   }
 
@@ -254,9 +264,20 @@ export default function SetupPage() {
             <form onSubmit={handleCompleteSetup} className="space-y-4">
               {members.map((member, index) => (
                 <div key={index} className="p-4 bg-white rounded-xl border border-border">
-                  <p className="text-sm font-medium text-muted mb-2">
-                    Lid {index + 1}
-                  </p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-muted">
+                      Lid {index + 1} {index === 0 && '(jij)'}
+                    </p>
+                    {members.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeMember(index)}
+                        className="text-red-400 hover:text-red-600 text-sm"
+                      >
+                        Verwijder
+                      </button>
+                    )}
+                  </div>
                   <div className="space-y-3">
                     <input
                       type="text"
@@ -276,6 +297,16 @@ export default function SetupPage() {
                   </div>
                 </div>
               ))}
+
+              {members.length < 4 && (
+                <button
+                  type="button"
+                  onClick={addMember}
+                  className="w-full py-3 border-2 border-dashed border-border rounded-xl text-muted hover:border-primary hover:text-primary transition-colors"
+                >
+                  + Extra lid toevoegen ({members.length}/4)
+                </button>
+              )}
 
               {error && (
                 <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm">
