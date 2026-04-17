@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 
@@ -12,6 +12,8 @@ interface MemberForm {
 export default function SetupPage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
+  const [user, setUser] = useState<any>(null)
+  const [loadingUser, setLoadingUser] = useState(true)
   
   // Step 1: Account
   const [email, setEmail] = useState('')
@@ -20,13 +22,28 @@ export default function SetupPage() {
   // Step 2: Household
   const [householdName, setHouseholdName] = useState('')
   
-  // Step 3: Members - start met 2, max 4
+  // Step 3: Members
   const [members, setMembers] = useState<MemberForm[]>([
     { name: '', role: 'admin' }
   ])
   
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Check auth on mount
+  useEffect(() => {
+    const checkUser = async () => {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (session?.user) {
+        setUser(session.user)
+        setStep(2) // Skip to step 2 if already logged in
+      }
+      setLoadingUser(false)
+    }
+    checkUser()
+  }, [])
 
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,9 +52,12 @@ export default function SetupPage() {
 
     const supabase = createClient()
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/setup`,
+      },
     })
 
     if (error) {
@@ -46,7 +66,10 @@ export default function SetupPage() {
       return
     }
 
-    setStep(2)
+    if (data.user) {
+      setUser(data.user)
+      setStep(2)
+    }
     setLoading(false)
   }
 
@@ -78,9 +101,13 @@ export default function SetupPage() {
     const supabase = createClient()
 
     try {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Geen gebruiker gevonden')
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession()
+      const currentUser = session?.user
+      
+      if (!currentUser) {
+        throw new Error('Je bent niet ingelogd. Log opnieuw in.')
+      }
 
       // Create household
       const { data: household, error: householdError } = await supabase
@@ -125,9 +152,17 @@ export default function SetupPage() {
   }
 
   const removeMember = (index: number) => {
-    if (members.length <= 1) return // Minimaal 1 lid
+    if (members.length <= 1) return
     const newMembers = members.filter((_, i) => i !== index)
     setMembers(newMembers)
+  }
+
+  if (loadingUser) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-muted">Laden...</div>
+      </main>
+    )
   }
 
   return (
@@ -197,8 +232,15 @@ export default function SetupPage() {
                 disabled={loading}
                 className="w-full bg-primary text-white py-3 px-4 rounded-xl font-medium hover:bg-primary-600 transition-colors disabled:opacity-50"
               >
-                {loading ? 'Bezig...' : 'Doorgaan'}
+                {loading ? 'Bezig...' : 'Account aanmaken'}
               </button>
+
+              <p className="text-center text-sm text-muted">
+                Al een account?{' '}
+                <a href="/login" className="text-primary hover:underline">
+                  Inloggen
+                </a>
+              </p>
             </form>
           </>
         )}
@@ -332,13 +374,6 @@ export default function SetupPage() {
             </form>
           </>
         )}
-
-        <p className="text-center mt-6 text-muted">
-          Al een account?{' '}
-          <a href="/login" className="text-primary hover:underline">
-            Inloggen
-          </a>
-        </p>
       </div>
     </main>
   )
