@@ -266,8 +266,8 @@ export default function WeekPlanner() {
                         {categoryItems.map((item, idx) => (
                           <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded hover:bg-gray-100">
                             <input type="checkbox" className="w-5 h-5 rounded border-gray-300" />
-                            <span className="flex-1">{item.name.trim()}</span>
-                            <span className="text-gray-500 text-sm font-medium">{item.amount} {item.unit}</span>
+                            <span className="flex-1">{item.name}</span>
+                            <span className="text-gray-500 text-sm font-medium ml-2">{item.amount} {item.unit}</span>
                           </div>
                         ))}
                       </div>
