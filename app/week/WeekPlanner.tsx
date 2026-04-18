@@ -27,19 +27,19 @@ const DAYS_SHORT = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo']
 const DAYS_FULL = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag']
 
 const MEALS = [
-  { key: 'breakfast', label: 'Ontbijt', icon: '🌅' },
-  { key: 'lunch', label: 'Lunch', icon: '🌞' },
-  { key: 'dinner', label: 'Diner', icon: '🌙' }
+  { key: 'breakfast', label: 'Ontbijt', color: 'bg-amber-50 border-amber-200 text-amber-900' },
+  { key: 'lunch', label: 'Lunch', color: 'bg-emerald-50 border-emerald-200 text-emerald-900' },
+  { key: 'dinner', label: 'Diner', color: 'bg-indigo-50 border-indigo-200 text-indigo-900' }
 ] as const
 
-const CATEGORY_CONFIG: Record<string, { label: string; icon: string; color: string; bg: string }> = {
-  'groente': { label: 'Groente', icon: '🥬', color: 'text-green-700', bg: 'bg-green-50' },
-  'fruit': { label: 'Fruit', icon: '🍎', color: 'text-red-700', bg: 'bg-red-50' },
-  'vlees': { label: 'Vlees', icon: '🥩', color: 'text-rose-700', bg: 'bg-rose-50' },
-  'vis': { label: 'Vis', icon: '🐟', color: 'text-blue-700', bg: 'bg-blue-50' },
-  'zuivel': { label: 'Zuivel', icon: '🥛', color: 'text-yellow-700', bg: 'bg-yellow-50' },
-  'granen': { label: 'Granen', icon: '🌾', color: 'text-amber-700', bg: 'bg-amber-50' },
-  'overig': { label: 'Overig', icon: '📦', color: 'text-slate-700', bg: 'bg-slate-50' }
+const CATEGORY_CONFIG: Record<string, { label: string; color: string; text: string }> = {
+  'groente': { label: 'Groente', color: 'bg-green-100', text: 'text-green-800' },
+  'fruit': { label: 'Fruit', color: 'bg-red-100', text: 'text-red-800' },
+  'vlees': { label: 'Vlees', color: 'bg-rose-100', text: 'text-rose-800' },
+  'vis': { label: 'Vis', color: 'bg-blue-100', text: 'text-blue-800' },
+  'zuivel': { label: 'Zuivel', color: 'bg-yellow-100', text: 'text-yellow-800' },
+  'granen': { label: 'Granen', color: 'bg-amber-100', text: 'text-amber-800' },
+  'overig': { label: 'Overig', color: 'bg-gray-100', text: 'text-gray-800' }
 }
 
 export default function WeekPlanner() {
@@ -133,29 +133,30 @@ export default function WeekPlanner() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-slate-500">Laden...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-500">Laden...</div>
       </div>
     )
   }
 
   const weekNumber = getWeekNumber(new Date(weekStart))
   const dateRange = formatDateRange(weekStart)
+  const today = new Date().toISOString().split('T')[0]
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-sm font-bold">R</span>
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
+                <span className="text-white font-bold text-lg">R</span>
               </div>
-              <span className="font-semibold text-slate-900">Rut</span>
+              <span className="font-bold text-xl text-gray-900">Rut</span>
             </div>
             <form action="/auth/signout" method="post">
-              <button className="text-sm text-slate-600 hover:text-slate-900">
+              <button className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
                 Uitloggen
               </button>
             </form>
@@ -163,30 +164,32 @@ export default function WeekPlanner() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-slate-100 p-1 rounded-xl w-fit">
+        <div className="flex gap-2 mb-8">
           <button
             onClick={() => setActiveTab('planner')}
-            className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all ${
               activeTab === 'planner' 
-                ? 'bg-white text-slate-900 shadow-sm' 
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-blue-600 text-white shadow-md' 
+                : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
             }`}
           >
             Weekplanner
           </button>
           <button
             onClick={() => setActiveTab('shopping')}
-            className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+            className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
               activeTab === 'shopping' 
-                ? 'bg-white text-slate-900 shadow-sm' 
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-blue-600 text-white shadow-md' 
+                : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
             }`}
           >
             Boodschappen
             {mealPlans.length > 0 && (
-              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold">
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                activeTab === 'shopping' ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700'
+              }`}>
                 {mealPlans.length}
               </span>
             )}
@@ -196,98 +199,153 @@ export default function WeekPlanner() {
         {activeTab === 'planner' ? (
           <div className="space-y-6">
             {/* Week Navigation */}
-            <div className="flex items-center justify-between">
-              <button 
-                onClick={prevWeek}
-                className="p-2 text-slate-600 hover:text-slate-900 hover:bg-white rounded-lg transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              
-              <div className="text-center">
-                <p className="text-lg font-semibold text-slate-900">Week {weekNumber}</p>
-                <p className="text-sm text-slate-500">{dateRange}</p>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <button 
+                  onClick={prevWeek}
+                  className="p-3 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-gray-900">Week {weekNumber}</p>
+                  <p className="text-base text-gray-500 mt-1">{dateRange}</p>
+                </div>
+                
+                <button 
+                  onClick={nextWeek}
+                  className="p-3 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
-              
-              <button 
-                onClick={nextWeek}
-                className="p-2 text-slate-600 hover:text-slate-900 hover:bg-white rounded-lg transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
             </div>
 
             {/* Mobile View */}
             <div className="lg:hidden space-y-4">
-              {DAYS_FULL.map((day, dayIndex) => (
-                <DayCard
-                  key={day}
-                  day={day}
-                  dayShort={DAYS_SHORT[dayIndex]}
-                  date={formatDate(getDate(dayIndex))}
-                  meals={MEALS}
-                  getMeal={(mealType) => getMeal(dayIndex, mealType)}
-                  onAddMeal={(mealKey) => {
-                    setSelectedSlot({ day: dayIndex, meal: mealKey })
-                    setShowModal(true)
-                  }}
-                  onRemoveMeal={removeMeal}
-                />
-              ))}
+              {DAYS_FULL.map((day, dayIndex) => {
+                const isToday = getDate(dayIndex) === today
+                return (
+                  <div key={day} className={`bg-white rounded-2xl shadow-sm border-2 overflow-hidden ${
+                    isToday ? 'border-blue-500' : 'border-gray-200'
+                  }`}>
+                    <div className="bg-gray-50 px-5 py-4 border-b border-gray-200">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-gray-900 text-lg">{DAYS_SHORT[dayIndex]}</span>
+                          {isToday && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+                              Vandaag
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-base text-gray-500">{formatDate(getDate(dayIndex))}</span>
+                      </div>
+                    </div>
+                    <div className="p-5 space-y-4">
+                      {MEALS.map(meal => {
+                        const planned = getMeal(dayIndex, meal.key)
+                        return (
+                          <div key={meal.key}>
+                            <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
+                              {meal.label}
+                            </p>
+                            {planned ? (
+                              <div className={`p-4 rounded-xl border-2 ${meal.color}`}>
+                                <p className="font-bold text-base">{planned.recipe.name}</p>
+                                <p className="text-sm opacity-70 mt-1">{planned.recipe.prep_time_minutes} min</p>
+                                <button 
+                                  onClick={() => removeMeal(planned.id)}
+                                  className="text-sm font-semibold text-red-600 hover:text-red-700 mt-3"
+                                >
+                                  Verwijderen
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setSelectedSlot({ day: dayIndex, meal: meal.key })
+                                  setShowModal(true)
+                                }}
+                                className="w-full py-4 px-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all font-semibold flex items-center justify-center gap-2"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                                Toevoegen
+                              </button>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
 
             {/* Desktop View */}
-            <div className="hidden lg:grid lg:grid-cols-7 gap-3">
-              {DAYS_SHORT.map((dayShort, dayIndex) => (
-                <div key={dayShort} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                  <div className="bg-slate-50 px-3 py-3 border-b border-slate-200 text-center">
-                    <p className="font-semibold text-slate-900 text-sm">{dayShort}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{formatDate(getDate(dayIndex))}</p>
-                  </div>
-                  <div className="p-2 space-y-2">
-                    {MEALS.map(meal => {
-                      const planned = getMeal(dayIndex, meal.key)
-                      return (
-                        <div key={meal.key}>
-                          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">
-                            {meal.label}
-                          </p>
-                          {planned ? (
-                            <div className="bg-slate-50 border border-slate-200 rounded-lg p-2.5 group">
-                              <p className="font-medium text-slate-900 text-xs leading-snug line-clamp-2">
-                                {planned.recipe.name}
-                              </p>
-                              <p className="text-xs text-slate-500 mt-1">
-                                {planned.recipe.prep_time_minutes} min
-                              </p>
-                              <button 
-                                onClick={() => removeMeal(planned.id)}
-                                className="text-xs text-red-600 hover:text-red-700 mt-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            <div className="hidden lg:grid lg:grid-cols-7 gap-4">
+              {DAYS_SHORT.map((dayShort, dayIndex) => {
+                const isToday = getDate(dayIndex) === today
+                return (
+                  <div key={dayShort} className={`bg-white rounded-2xl shadow-sm border-2 overflow-hidden flex flex-col ${
+                    isToday ? 'border-blue-500' : 'border-gray-200'
+                  }`}>
+                    <div className={`px-3 py-4 border-b text-center ${
+                      isToday ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'
+                    }`}>
+                      <p className={`font-bold text-lg ${isToday ? 'text-blue-900' : 'text-gray-900'}`}>{dayShort}</p>
+                      <p className={`text-sm mt-1 ${isToday ? 'text-blue-600' : 'text-gray-500'}`}>
+                        {formatDate(getDate(dayIndex))}
+                      </p>
+                    </div>
+                    <div className="p-3 space-y-3 flex-1">
+                      {MEALS.map(meal => {
+                        const planned = getMeal(dayIndex, meal.key)
+                        return (
+                          <div key={meal.key} className="space-y-1">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                              {meal.label}
+                            </p>
+                            {planned ? (
+                              <div className={`p-3 rounded-xl border-2 ${meal.color} group`}>
+                                <p className="font-bold text-sm leading-snug line-clamp-2">
+                                  {planned.recipe.name}
+                                </p>
+                                <p className="text-xs opacity-70 mt-1">{planned.recipe.prep_time_minutes} min</p>
+                                <button 
+                                  onClick={() => removeMeal(planned.id)}
+                                  className="text-xs font-semibold text-red-600 hover:text-red-700 mt-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  Verwijder
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setSelectedSlot({ day: dayIndex, meal: meal.key })
+                                  setShowModal(true)
+                                }}
+                                className="w-full h-14 border-2 border-dashed border-gray-300 rounded-xl text-gray-400 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center"
                               >
-                                Verwijderen
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
                               </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => {
-                                setSelectedSlot({ day: dayIndex, meal: meal.key })
-                                setShowModal(true)
-                              }}
-                              className="w-full h-10 border-2 border-dashed border-slate-200 rounded-lg text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all text-lg font-light"
-                            >
-                              +
-                            </button>
-                          )}
-                        </div>
-                      )
-                    })}
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         ) : (
@@ -314,62 +372,7 @@ export default function WeekPlanner() {
   )
 }
 
-// Sub-components for better organization
-
-function DayCard({ day, dayShort, date, meals, getMeal, onAddMeal, onRemoveMeal }: {
-  day: string
-  dayShort: string
-  date: string
-  meals: typeof MEALS
-  getMeal: (mealType: string) => MealPlan | undefined
-  onAddMeal: (mealKey: string) => void
-  onRemoveMeal: (id: string) => void
-}) {
-  return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-        <div className="flex justify-between items-center">
-          <span className="font-semibold text-slate-900">{dayShort}</span>
-          <span className="text-sm text-slate-500">{date}</span>
-        </div>
-      </div>
-      <div className="p-4 space-y-4">
-        {meals.map(meal => {
-          const planned = getMeal(meal.key)
-          return (
-            <div key={meal.key}>
-              <div className="flex items-center gap-2 mb-2">
-                <span>{meal.icon}</span>
-                <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  {meal.label}
-                </span>
-              </div>
-              {planned ? (
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                  <p className="font-medium text-slate-900 text-sm">{planned.recipe.name}</p>
-                  <p className="text-xs text-slate-500 mt-1">{planned.recipe.prep_time_minutes} min</p>
-                  <button 
-                    onClick={() => onRemoveMeal(planned.id)}
-                    className="text-xs text-red-600 hover:text-red-700 mt-2 font-medium"
-                  >
-                    Verwijderen
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => onAddMeal(meal.key)}
-                  className="w-full py-3 px-4 border-2 border-dashed border-slate-300 rounded-lg text-slate-500 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all text-sm font-medium"
-                >
-                  + Maaltijd toevoegen
-                </button>
-              )}
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
+// Sub-components
 
 function ShoppingList({ items, mealCount, weekNumber, dateRange }: {
   items: ShoppingItem[]
@@ -378,18 +381,18 @@ function ShoppingList({ items, mealCount, weekNumber, dateRange }: {
   dateRange: string
 }) {
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="px-6 py-5 border-b border-slate-200 bg-slate-50/50">
+    <div className="max-w-3xl mx-auto">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="px-6 py-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">Boodschappenlijst</h2>
-              <p className="text-sm text-slate-500 mt-1">
+              <h2 className="text-2xl font-bold text-gray-900">Boodschappenlijst</h2>
+              <p className="text-base text-gray-500 mt-1">
                 Week {weekNumber} • {dateRange} • {mealCount} maaltijden
               </p>
             </div>
             {items.length > 0 && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full">
+              <span className="px-4 py-2 bg-blue-100 text-blue-800 text-base font-bold rounded-full">
                 {items.length} items
               </span>
             )}
@@ -398,14 +401,14 @@ function ShoppingList({ items, mealCount, weekNumber, dateRange }: {
         
         <div className="p-6">
           {items.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="text-center py-16">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </div>
-              <p className="text-slate-900 font-medium">Geen boodschappen nodig</p>
-              <p className="text-slate-500 text-sm mt-1">Plan eerst maaltijden in de weekplanner</p>
+              <p className="text-xl font-semibold text-gray-900">Geen boodschappen nodig</p>
+              <p className="text-gray-500 text-base mt-2">Plan eerst maaltijden in de weekplanner</p>
             </div>
           ) : (
             <div className="space-y-8">
@@ -417,25 +420,24 @@ function ShoppingList({ items, mealCount, weekNumber, dateRange }: {
                 
                 return (
                   <div key={category}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className={`w-8 h-8 rounded-lg flex items-center justify-center ${config.bg}`}>
-                        {config.icon}
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className={`px-4 py-2 rounded-xl font-bold text-sm ${config.color} ${config.text}`}>
+                        {config.label}
                       </span>
-                      <h3 className={`font-semibold ${config.color}`}>{config.label}</h3>
-                      <span className="text-sm text-slate-400">({categoryItems.length})</span>
+                      <span className="text-base text-gray-400 font-medium">({categoryItems.length})</span>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {categoryItems.map((item, idx) => (
                         <label 
                           key={idx}
-                          className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
+                          className="flex items-center gap-4 p-5 rounded-xl border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer transition-all"
                         >
                           <input 
                             type="checkbox" 
-                            className="w-5 h-5 rounded border-slate-300 text-blue-600 shrink-0"
+                            className="w-6 h-6 rounded-lg border-2 border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 shrink-0"
                           />
-                          <span className="flex-1 font-medium text-slate-700">{item.name}</span>
-                          <span className="text-sm text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md font-medium tabular-nums shrink-0">
+                          <span className="flex-1 font-semibold text-gray-800 text-lg">{item.name}</span>
+                          <span className="text-base font-bold text-gray-600 bg-gray-100 px-4 py-2 rounded-lg tabular-nums shrink-0">
                             {item.amount} {item.unit}
                           </span>
                         </label>
@@ -460,37 +462,37 @@ function RecipeModal({ recipes, selectedDay, selectedMeal, onClose, onSelect }: 
   onSelect: (recipeId: string) => void
 }) {
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] overflow-hidden shadow-2xl">
-        <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+        <div className="px-8 py-6 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Kies een recept</h2>
-            <p className="text-sm text-slate-500">{selectedDay} • {selectedMeal}</p>
+            <h2 className="text-2xl font-bold text-gray-900">Kies een recept</h2>
+            <p className="text-base text-gray-500 mt-1">{selectedDay} • {selectedMeal}</p>
           </div>
           <button 
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        <div className="p-4 overflow-y-auto max-h-[60vh] space-y-2">
+        <div className="p-6 overflow-y-auto max-h-[70vh] space-y-3">
           {recipes.map(recipe => (
             <button
               key={recipe.id}
               onClick={() => onSelect(recipe.id)}
-              className="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all group"
+              className="w-full text-left p-5 rounded-2xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all group"
             >
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">
+                  <p className="font-bold text-lg text-gray-900 group-hover:text-blue-700 transition-colors">
                     {recipe.name}
                   </p>
-                  <p className="text-sm text-slate-500 mt-1 capitalize">{recipe.category}</p>
+                  <p className="text-base text-gray-500 mt-1 capitalize">{recipe.category}</p>
                 </div>
-                <span className="text-sm text-slate-400 bg-slate-100 px-2 py-1 rounded font-medium">
+                <span className="text-base font-bold text-gray-500 bg-gray-100 px-4 py-2 rounded-lg group-hover:bg-blue-100 group-hover:text-blue-700 transition-colors">
                   {recipe.prep_time_minutes} min
                 </span>
               </div>

@@ -88,10 +88,28 @@
 - Geen externe UI libraries (shadcn etc.) voor nu
 - React + TypeScript + Next.js
 
+## Gekozen Design Richting (2026-04-18)
+
+### Weekplanner
+- **Basis**: Concept B (prominente "Add" knoppen)
+- **Layout**: 7-koloms grid op desktop, gestapeld op mobile
+- **Kleuren**: Subtiele tinten per maaltijd (niet te fel)
+- **Acties**: Duidelijke "+" knoppen met "Voeg toe" tekst op mobile
+- **Week navigatie**: Week nummer + datumbereik
+
+### Boodschappenlijst
+- **Basis**: Huidige design (screenshot 1)
+- **Categorieën**: Met icons en kleuren (Produce, Meat, Dairy, Grains)
+- **Items**: Checkbox + naam + hoeveelheid badge
+- **Mobile**: Goede schaling, zelfde layout
+
+### Referentie Screenshots
+- Zie: screenshots 1, 3, 4, 5, 7 in project folder
+
 ## Openstaand
-- [ ] v0.dev output van Cas ontvangen
-- [ ] Design richting kiezen
-- [ ] Complete redesign implementeren
+- [x] v0.dev output ontvangen
+- [x] Design richting gekozen
+- [ ] Complete redesign implementeren (IN PROGRESS)
 - [ ] Login/setup pagina's polishen
 
 ## Notities
