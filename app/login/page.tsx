@@ -19,9 +19,9 @@ export default function LoginPage() {
   useEffect(() => {
     const checkSession = async () => {
       const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        router.push('/setup')
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        router.push('/week')
       }
     }
     checkSession()
@@ -45,8 +45,8 @@ export default function LoginPage() {
       return
     }
 
-    // Success - redirect to setup
-    router.push('/setup')
+    // Success - redirect to week planner
+    router.push('/week')
     router.refresh()
   }
 

@@ -42,7 +42,21 @@ export default function SetupPage() {
       
       if (currentUser) {
         setUser(currentUser)
-        setStep(2) // Skip to step 2 if logged in
+        
+        // Check if user already has a household
+        const { data: existingHousehold } = await supabase
+          .from('households')
+          .select('id')
+          .eq('created_by', currentUser.id)
+          .single()
+        
+        if (existingHousehold) {
+          // User already has a household, redirect to week planner
+          router.push('/week')
+          return
+        }
+        
+        setStep(2) // Skip to step 2 if logged in but no household yet
       }
       // If not logged in, stay on step 1 to create account
       setLoadingUser(false)
