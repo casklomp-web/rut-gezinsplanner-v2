@@ -34,7 +34,7 @@ export default function SetupPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Check auth on mount
+  // Check auth on mount - allow new users to create account
   useEffect(() => {
     const checkUser = async () => {
       const supabase = createClient()
@@ -43,10 +43,8 @@ export default function SetupPage() {
       if (session?.user) {
         setUser(session.user)
         setStep(2) // Skip to step 2 if logged in
-      } else {
-        // Not logged in - redirect to login
-        router.push('/login')
       }
+      // If not logged in, stay on step 1 to create account
       setLoadingUser(false)
     }
     checkUser()
@@ -74,9 +72,15 @@ export default function SetupPage() {
     }
 
     if (data.user) {
-      // Show email confirmation message
-      setShowEmailConfirmation(true)
       setUser(data.user)
+      // Check if email confirmation is required
+      if (data.session) {
+        // Auto-confirmed (email confirmation disabled in Supabase) - go to step 2
+        setStep(2)
+      } else {
+        // Email confirmation required - show message
+        setShowEmailConfirmation(true)
+      }
     }
     setLoading(false)
   }
@@ -119,10 +123,13 @@ export default function SetupPage() {
         return
       }
 
-      // Create household
+      // Create household with created_by
       const { data: household, error: householdError } = await supabase
         .from('households')
-        .insert({ name: householdName })
+        .insert({ 
+          name: householdName,
+          created_by: currentUser.id 
+        })
         .select()
         .single()
 
