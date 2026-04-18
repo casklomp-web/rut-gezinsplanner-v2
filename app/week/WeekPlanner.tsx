@@ -247,21 +247,33 @@ export default function WeekPlanner() {
         ) : (
           /* Shopping List */
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold mb-4">Boodschappenlijst</h2>
+            <h2 className="text-xl font-bold mb-4">🛒 Boodschappenlijst</h2>
             <p className="text-gray-600 mb-4">
               Gebaseerd op {mealPlans.length} geplande maaltijden
             </p>
             {shoppingItems.length === 0 ? (
               <p className="text-gray-500">Geen ingrediënten gevonden. Plan eerst maaltijden in de weekplanner.</p>
             ) : (
-              <div className="space-y-2">
-                {shoppingItems.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded">
-                    <input type="checkbox" className="w-5 h-5" />
-                    <span className="flex-1">{item.name}</span>
-                    <span className="text-gray-500 text-sm">{item.amount} {item.unit}</span>
-                  </div>
-                ))}
+              <div className="space-y-6">
+                {['groente', 'fruit', 'vlees', 'vis', 'zuivel', 'granen', 'overig'].map(category => {
+                  const categoryItems = shoppingItems.filter(item => item.category === category)
+                  if (categoryItems.length === 0) return null
+                  
+                  return (
+                    <div key={category}>
+                      <h3 className="font-semibold text-gray-700 mb-2 capitalize">{category}</h3>
+                      <div className="space-y-2">
+                        {categoryItems.map((item, idx) => (
+                          <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded hover:bg-gray-100">
+                            <input type="checkbox" className="w-5 h-5 rounded border-gray-300" />
+                            <span className="flex-1">{item.name}</span>
+                            <span className="text-gray-500 text-sm font-medium">{item.amount} {item.unit}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
