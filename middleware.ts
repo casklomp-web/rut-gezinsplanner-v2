@@ -2,8 +2,8 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // Publieke routes - geen auth check nodig
-  const publicRoutes = ['/login', '/auth']
+  // Publieke routes - geen auth check nodig (toegankelijk voor iedereen)
+  const publicRoutes = ['/login', '/auth', '/setup']
   const isPublicRoute = publicRoutes.some(route => 
     request.nextUrl.pathname.startsWith(route)
   )
