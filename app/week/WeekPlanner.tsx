@@ -83,17 +83,38 @@ export default function WeekPlanner() {
 
   async function addMeal(recipeId: string) {
     if (!selectedSlot) return
-    await fetch('/api/meal-plan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        date: getDate(selectedSlot.day),
-        meal_type: selectedSlot.meal,
-        recipe_id: recipeId
+    
+    const date = getDate(selectedSlot.day)
+    const meal_type = selectedSlot.meal
+    
+    console.log('Adding meal:', { date, meal_type, recipeId })
+    
+    try {
+      const response = await fetch('/api/meal-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date,
+          meal_type,
+          recipe_id: recipeId
+        })
       })
-    })
-    setShowModal(false)
-    fetchData()
+      
+      const result = await response.json()
+      console.log('Response:', result)
+      
+      if (!response.ok) {
+        console.error('Error adding meal:', result.error)
+        alert('Fout bij toevoegen: ' + result.error)
+        return
+      }
+      
+      setShowModal(false)
+      fetchData()
+    } catch (err) {
+      console.error('Network error:', err)
+      alert('Netwerk fout bij toevoegen maaltijd')
+    }
   }
 
   async function removeMeal(id: string) {
