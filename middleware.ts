@@ -61,7 +61,17 @@ export async function middleware(request: NextRequest) {
   )
 
   // Refresh session if expired
-  await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Protect private routes - redirect to login if not authenticated
+  if (!isPublicRoute && !user) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  // If user is logged in and tries to access login/setup, redirect to week
+  if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/setup')) {
+    return NextResponse.redirect(new URL('/week', request.url))
+  }
 
   return response
 }
