@@ -247,28 +247,45 @@ export default function WeekPlanner() {
         ) : (
           /* Shopping List */
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold mb-4">🛒 Boodschappenlijst</h2>
-            <p className="text-gray-600 mb-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">🛒 Boodschappenlijst</h2>
+              <span className="text-sm text-gray-500">{shoppingItems.length} items</span>
+            </div>
+            <p className="text-gray-600 mb-6">
               Gebaseerd op {mealPlans.length} geplande maaltijden
             </p>
             {shoppingItems.length === 0 ? (
               <p className="text-gray-500">Geen ingrediënten gevonden. Plan eerst maaltijden in de weekplanner.</p>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {['groente', 'fruit', 'vlees', 'vis', 'zuivel', 'granen', 'overig'].map(category => {
                   const categoryItems = shoppingItems.filter(item => item.category === category)
                   if (categoryItems.length === 0) return null
                   
+                  const categoryLabels: Record<string, string> = {
+                    'groente': '🥬 Groente',
+                    'fruit': '🍎 Fruit', 
+                    'vlees': '🥩 Vlees',
+                    'vis': '🐟 Vis',
+                    'zuivel': '🥛 Zuivel',
+                    'granen': '🌾 Granen',
+                    'overig': '📦 Overig'
+                  }
+                  
                   return (
-                    <div key={category}>
-                      <h3 className="font-semibold text-gray-700 mb-2 capitalize">{category}</h3>
-                      <div className="space-y-2">
+                    <div key={category} className="border-t pt-4 first:border-t-0 first:pt-0">
+                      <h3 className="font-bold text-gray-800 mb-3 text-sm uppercase tracking-wide">
+                        {categoryLabels[category] || category}
+                      </h3>
+                      <div className="space-y-1">
                         {categoryItems.map((item, idx) => (
-                          <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded hover:bg-gray-100">
-                            <input type="checkbox" className="w-5 h-5 rounded border-gray-300" />
-                            <span className="flex-1">{item.name}</span>
-                            <span className="text-gray-500 text-sm font-medium ml-2">{item.amount} {item.unit}</span>
-                          </div>
+                          <label key={idx} className="flex items-center gap-4 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                            <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                            <span className="flex-1 text-gray-800">{item.name}</span>
+                            <span className="text-gray-600 text-sm font-medium tabular-nums">
+                              {item.amount} {item.unit}
+                            </span>
+                          </label>
                         ))}
                       </div>
                     </div>

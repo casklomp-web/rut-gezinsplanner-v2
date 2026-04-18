@@ -61,10 +61,19 @@ export async function GET(request: Request) {
     return acc
   }, {})
 
-  // Convert to array and round amounts
+  // Normalize units (singular form)
+  const unitMapping: Record<string, string> = {
+    'theelepels': 'theelepel',
+    'eetlepels': 'eetlepel',
+    'stuks': 'stuk',
+    'sneetjes': 'sneetje'
+  }
+
+  // Convert to array, round amounts, normalize units
   const items = Object.values(grouped || {}).map((item: any) => ({
     ...item,
-    amount: Math.round(item.amount * 10) / 10 // Round to 1 decimal
+    amount: Math.round(item.amount * 10) / 10, // Round to 1 decimal
+    unit: unitMapping[item.unit] || item.unit // Normalize to singular
   }))
 
   return NextResponse.json({ items })
