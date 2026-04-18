@@ -38,10 +38,10 @@ export default function SetupPage() {
   useEffect(() => {
     const checkUser = async () => {
       const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
       
-      if (session?.user) {
-        setUser(session.user)
+      if (currentUser) {
+        setUser(currentUser)
         setStep(2) // Skip to step 2 if logged in
       }
       // If not logged in, stay on step 1 to create account
