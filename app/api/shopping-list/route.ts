@@ -43,22 +43,29 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: ingError.message }, { status: 500 })
   }
 
-  // Group and aggregate ingredients
+  // Group and aggregate ingredients by name (case insensitive)
   const grouped = ingredients?.reduce((acc: any, ing: any) => {
-    const key = `${ing.name}-${ing.unit}`
-    if (!acc[key]) {
-      acc[key] = {
+    const normalizedName = ing.name.toLowerCase().trim()
+    if (!acc[normalizedName]) {
+      acc[normalizedName] = {
         name: ing.name,
         amount: 0,
         unit: ing.unit,
         category: ing.category || 'overig'
       }
     }
-    acc[key].amount += ing.amount || 0
+    // Only aggregate if same unit, otherwise keep separate
+    if (acc[normalizedName].unit === ing.unit) {
+      acc[normalizedName].amount += ing.amount || 0
+    }
     return acc
   }, {})
 
-  const items = Object.values(grouped || {})
+  // Convert to array and round amounts
+  const items = Object.values(grouped || {}).map((item: any) => ({
+    ...item,
+    amount: Math.round(item.amount * 10) / 10 // Round to 1 decimal
+  }))
 
   return NextResponse.json({ items })
 }
