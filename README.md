@@ -1,4 +1,15 @@
-# Rut v0.1 - Setup Instructies
+# Rut Gezinsplanner
+
+Een slimme weekplanner voor gezinnen, met focus op gezonde voeding en makkelijke planning.
+
+## Quick Links
+
+- [Database Migrations Workflow](./docs/migrations.md) - **Lees dit voor databasewijzigingen**
+- [Product Roadmap](./docs/roadmap.md) - Visie en planning
+
+---
+
+# Setup Instructies
 
 ## Stap 1: Supabase Project Aanmaken
 
@@ -67,9 +78,22 @@ Ga naar **Stap 2** in het bouwplan: Database Schema toepassen (al gedaan in stap
 - Check of Supabase URL en key kloppen
 
 **Error: "relation does not exist"**
-- SQL migration is niet correct uitgevoerd
-- Run de SQL opnieuw in Supabase SQL Editor
+- Zie [docs/migrations.md](./docs/migrations.md) voor correcte workflow
+- Geen handmatige SQL in editor!
 
 **Vercel build error**
 - Check of alle environment variables zijn ingesteld
 - Check build logs in Vercel dashboard
+
+---
+
+## Development Workflow
+
+### Database Wijzigingen
+
+**Belangrijk:** Alle databasewijzigingen gaan via migrations. Zie [docs/migrations.md](./docs/migrations.md) voor details.
+
+Korte versie:
+1. Migration file in `supabase/migrations/`
+2. Pull Request → review
+3. Merge → GitHub Actions draait automatisch
