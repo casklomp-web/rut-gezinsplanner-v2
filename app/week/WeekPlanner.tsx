@@ -38,10 +38,17 @@ export default function WeekPlanner() {
   const [activeTab, setActiveTab] = useState<'planner' | 'shopping'>('planner')
   const [showModal, setShowModal] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState<{day: number, meal: string} | null>(null)
+  const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([])
 
   useEffect(() => {
     fetchData()
   }, [weekStart])
+
+  useEffect(() => {
+    if (activeTab === 'shopping') {
+      fetchShoppingList()
+    }
+  }, [activeTab, weekStart])
 
   async function fetchData() {
     setLoading(true)
@@ -55,6 +62,12 @@ export default function WeekPlanner() {
     if (md.mealPlans) setMealPlans(md.mealPlans)
     
     setLoading(false)
+  }
+
+  async function fetchShoppingList() {
+    const s = await fetch(`/api/shopping-list?week_start=${weekStart}`)
+    const sd = await s.json()
+    if (sd.items) setShoppingItems(sd.items)
   }
 
   function getMeal(dayIndex: number, mealType: string) {
@@ -217,11 +230,11 @@ export default function WeekPlanner() {
             <p className="text-gray-600 mb-4">
               Gebaseerd op {mealPlans.length} geplande maaltijden
             </p>
-            {mealPlans.length === 0 ? (
-              <p className="text-gray-500">Geen maaltijden gepland. Plan eerst maaltijden in de weekplanner.</p>
+            {shoppingItems.length === 0 ? (
+              <p className="text-gray-500">Geen ingrediënten gevonden. Plan eerst maaltijden in de weekplanner.</p>
             ) : (
               <div className="space-y-2">
-                {generateShoppingList().map((item, idx) => (
+                {shoppingItems.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded">
                     <input type="checkbox" className="w-5 h-5" />
                     <span className="flex-1">{item.name}</span>
