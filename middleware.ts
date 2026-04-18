@@ -68,8 +68,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // If user is logged in and tries to access login/setup, redirect to week
-  if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/setup')) {
+  // If user is logged in and tries to access login, redirect to week
+  // Note: /setup is intentionally excluded - new users need to access it without being logged in
+  if (user && request.nextUrl.pathname === '/login') {
     return NextResponse.redirect(new URL('/week', request.url))
   }
 
