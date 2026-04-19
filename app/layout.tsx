@@ -45,7 +45,7 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
       </head>
-      <body className="bg-[#F8F9FA] text-[#2D3436] antialiased">
+      <body className="bg-[#F8F9FA] dark:bg-gray-900 text-[#2D3436] dark:text-gray-100 antialiased transition-colors">
         <Providers>
           <KeyboardShortcutsProvider>
             <ErrorBoundary>

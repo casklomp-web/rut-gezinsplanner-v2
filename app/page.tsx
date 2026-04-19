@@ -7,12 +7,17 @@ import { EmptyState } from "@/components/ui/ErrorBoundary";
 import { Button } from "@/components/ui/Button";
 import { format, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
-import { CalendarDays, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { useHaptic, HAPTIC_PATTERNS } from "@/components/providers/HapticProvider";
 import { trackEvent, AnalyticsEvents } from "@/components/providers/FeatureProvider";
 import { cn } from "@/lib/utils";
 import { Day } from "@/lib/types";
+import { CalendarDays, Sparkles, ChevronLeft, ChevronRight, Mic, ChefHat } from "lucide-react";
+import { NutritionPanel } from "@/components/features/NutritionPanel";
+import { VoiceInputButton } from "@/components/features/VoiceInputButton";
+import { MealPrepIndicator, PrepDayBadge } from "@/components/features/MealPrepIndicator";
+import { meals as defaultMeals } from "@/lib/data/meals";
+import { useUserStore } from "@/lib/store/userStore";
 
 // Day view component
 function DayView({ day }: { day: Day }) {
@@ -41,15 +46,34 @@ function DayView({ day }: { day: Day }) {
     });
   };
 
+  // Create meals data map for nutrition
+  const mealsData = new Map(defaultMeals.map(m => [m.id, m]));
+
   return (
     <div className="space-y-4">
+      {/* Meal Prep Badge */}
+      {(day.isMealPrepDay || day.isLeftoverDay) && (
+        <PrepDayBadge
+          isPrepDay={day.isMealPrepDay}
+          hasPrepMeals={day.isLeftoverDay}
+          className="mb-2"
+        />
+      )}
+
+      {/* Nutrition Summary */}
+      <NutritionPanel
+        day={day}
+        mealsData={mealsData}
+        variant="compact"
+      />
+
       {/* Meals */}
       <div className="space-y-3">
         {/* Breakfast */}
         <button
           onClick={() => handleMealToggle('breakfast')}
           className={cn(
-            "w-full bg-white rounded-xl p-4 border-2 transition-all text-left",
+            "w-full bg-white dark:bg-gray-800 rounded-xl p-4 border-2 transition-all text-left",
             day.meals.breakfast.completed
               ? "border-[#7CB342] bg-[#7CB342]/5"
               : "border-transparent hover:border-[#4A90A4]/30"
@@ -58,9 +82,9 @@ function DayView({ day }: { day: Day }) {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Ontbijt</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Ontbijt</p>
               <p className={cn(
-                "font-medium",
+                "font-medium dark:text-gray-200",
                 day.meals.breakfast.completed && "line-through text-gray-400"
               )}>
                 {day.meals.breakfast.mealName}
@@ -70,7 +94,7 @@ function DayView({ day }: { day: Day }) {
               "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
               day.meals.breakfast.completed
                 ? "bg-[#7CB342] border-[#7CB342]"
-                : "border-gray-300"
+                : "border-gray-300 dark:border-gray-600"
             )}>
               {day.meals.breakfast.completed && (
                 <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -85,7 +109,7 @@ function DayView({ day }: { day: Day }) {
         <button
           onClick={() => handleMealToggle('lunch')}
           className={cn(
-            "w-full bg-white rounded-xl p-4 border-2 transition-all text-left",
+            "w-full bg-white dark:bg-gray-800 rounded-xl p-4 border-2 transition-all text-left",
             day.meals.lunch.completed
               ? "border-[#7CB342] bg-[#7CB342]/5"
               : "border-transparent hover:border-[#4A90A4]/30"
@@ -94,9 +118,9 @@ function DayView({ day }: { day: Day }) {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Lunch</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Lunch</p>
               <p className={cn(
-                "font-medium",
+                "font-medium dark:text-gray-200",
                 day.meals.lunch.completed && "line-through text-gray-400"
               )}>
                 {day.meals.lunch.mealName}
@@ -106,7 +130,7 @@ function DayView({ day }: { day: Day }) {
               "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
               day.meals.lunch.completed
                 ? "bg-[#7CB342] border-[#7CB342]"
-                : "border-gray-300"
+                : "border-gray-300 dark:border-gray-600"
             )}>
               {day.meals.lunch.completed && (
                 <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -121,7 +145,7 @@ function DayView({ day }: { day: Day }) {
         <button
           onClick={() => handleMealToggle('dinner')}
           className={cn(
-            "w-full bg-white rounded-xl p-4 border-2 transition-all text-left",
+            "w-full bg-white dark:bg-gray-800 rounded-xl p-4 border-2 transition-all text-left",
             day.meals.dinner.completed
               ? "border-[#7CB342] bg-[#7CB342]/5"
               : "border-transparent hover:border-[#4A90A4]/30"
@@ -130,9 +154,9 @@ function DayView({ day }: { day: Day }) {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Diner</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Diner</p>
               <p className={cn(
-                "font-medium",
+                "font-medium dark:text-gray-200",
                 day.meals.dinner.completed && "line-through text-gray-400"
               )}>
                 {day.meals.dinner.mealName}
@@ -142,7 +166,7 @@ function DayView({ day }: { day: Day }) {
               "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
               day.meals.dinner.completed
                 ? "bg-[#7CB342] border-[#7CB342]"
-                : "border-gray-300"
+                : "border-gray-300 dark:border-gray-600"
             )}>
               {day.meals.dinner.completed && (
                 <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -170,13 +194,13 @@ function DayView({ day }: { day: Day }) {
             <div>
               <p className="text-xs text-[#4A90A4] uppercase tracking-wide font-medium">Training</p>
               <p className={cn(
-                "font-medium",
+                "font-medium dark:text-gray-200",
                 day.training.completed && "line-through text-gray-400"
               )}>
                 {day.training.description || "Training"}
               </p>
               {day.training.time && (
-                <p className="text-sm text-gray-500">{day.training.time}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{day.training.time}</p>
               )}
             </div>
             <div className={cn(
@@ -196,8 +220,8 @@ function DayView({ day }: { day: Day }) {
       )}
 
       {/* Checkins */}
-      <div className="bg-white rounded-xl p-4 border border-gray-200">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Dagelijkse check-ins</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Dagelijkse check-ins</h3>
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => toggleCheckin(day.id, 'walking')}
@@ -205,7 +229,7 @@ function DayView({ day }: { day: Day }) {
               "p-2 rounded-lg text-sm transition-colors text-left",
               day.checkins.walking
                 ? "bg-[#7CB342]/10 text-[#7CB342]"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
             )}
             aria-pressed={day.checkins.walking}
           >
@@ -217,7 +241,7 @@ function DayView({ day }: { day: Day }) {
               "p-2 rounded-lg text-sm transition-colors text-left",
               day.checkins.medication
                 ? "bg-[#7CB342]/10 text-[#7CB342]"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
             )}
             aria-pressed={day.checkins.medication}
           >
@@ -229,7 +253,7 @@ function DayView({ day }: { day: Day }) {
               "p-2 rounded-lg text-sm transition-colors text-left",
               day.checkins.sleepRoutine
                 ? "bg-[#7CB342]/10 text-[#7CB342]"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
             )}
             aria-pressed={day.checkins.sleepRoutine}
           >
@@ -243,6 +267,7 @@ function DayView({ day }: { day: Day }) {
 
 function TodayPageContent() {
   const { currentWeek, generateNewWeek, getToday } = useWeekStore();
+  const { currentUser } = useUserStore();
   const today = getToday();
   const [isLoading, setIsLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -296,6 +321,14 @@ function TodayPageContent() {
       setSelectedDayIndex(selectedDayIndex + 1);
     }
   };
+
+  const handleVoiceCommand = (command: string) => {
+    // Handle voice commands for planning
+    if (command.toLowerCase().includes('plan')) {
+      // Navigate to week view for planning
+      window.location.href = '/week';
+    }
+  };
   
   if (showOnboarding) {
     return (
@@ -338,6 +371,9 @@ function TodayPageContent() {
   const canGoPrev = selectedDayIndex > 0;
   const canGoNext = selectedDayIndex < currentWeek.days.length - 1;
 
+  // Create meals data map for meal prep
+  const mealsData = new Map(defaultMeals.map(m => [m.id, m]));
+
   return (
     <div className="px-4 py-6 max-w-md mx-auto">
       {/* Header */}
@@ -353,14 +389,18 @@ function TodayPageContent() {
             )}
           </div>
           <div className="flex items-center gap-1">
+            <VoiceInputButton
+              onSearch={handleVoiceCommand}
+              size="sm"
+            />
             <button
               onClick={handlePrevDay}
               disabled={!canGoPrev}
               className={cn(
                 "p-1 rounded-lg transition-colors",
                 canGoPrev
-                  ? "hover:bg-gray-100 text-gray-600"
-                  : "text-gray-300 cursor-not-allowed"
+                  ? "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+                  : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
               )}
               aria-label="Vorige dag"
             >
@@ -372,8 +412,8 @@ function TodayPageContent() {
               className={cn(
                 "p-1 rounded-lg transition-colors",
                 canGoNext
-                  ? "hover:bg-gray-100 text-gray-600"
-                  : "text-gray-300 cursor-not-allowed"
+                  ? "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+                  : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
               )}
               aria-label="Volgende dag"
             >
@@ -381,10 +421,17 @@ function TodayPageContent() {
             </button>
           </div>
         </div>
-        <h1 className="text-2xl font-bold text-[#2D3436]">
+        <h1 className="text-2xl font-bold text-[#2D3436] dark:text-gray-100">
           {format(selectedDate, "EEEE d MMMM", { locale: nl })}
         </h1>
       </header>
+
+      {/* Meal Prep Indicator for Week */}
+      <MealPrepIndicator
+        week={currentWeek}
+        mealsData={mealsData}
+        className="mb-4"
+      />
 
       {/* Dag overzicht */}
       <DayView day={selectedDay} />

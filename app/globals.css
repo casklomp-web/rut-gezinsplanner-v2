@@ -7,6 +7,11 @@
   --background-rgb: 248, 249, 250;
 }
 
+.dark {
+  --foreground-rgb: 248, 249, 250;
+  --background-rgb: 17, 24, 39;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -21,6 +26,81 @@ body {
   background: rgb(var(--background-rgb));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode transitions */
+.dark body {
+  background: rgb(var(--background-rgb));
+  color: rgb(var(--foreground-rgb));
+}
+
+.dark .bg-white {
+  background-color: rgb(31, 41, 55);
+}
+
+.dark .bg-gray-50 {
+  background-color: rgb(31, 41, 55);
+}
+
+.dark .bg-gray-100 {
+  background-color: rgb(55, 65, 81);
+}
+
+.dark .bg-gray-200 {
+  background-color: rgb(75, 85, 99);
+}
+
+.dark .bg-gray-800 {
+  background-color: rgb(31, 41, 55);
+}
+
+.dark .bg-gray-900 {
+  background-color: rgb(17, 24, 39);
+}
+
+.dark .bg-\[\#F8F9FA\] {
+  background-color: rgb(17, 24, 39);
+}
+
+.dark .text-gray-600 {
+  color: rgb(156, 163, 175);
+}
+
+.dark .text-gray-700 {
+  color: rgb(209, 213, 219);
+}
+
+.dark .text-gray-800 {
+  color: rgb(229, 231, 235);
+}
+
+.dark .text-gray-900 {
+  color: rgb(243, 244, 246);
+}
+
+.dark .text-\[\#2D3436\] {
+  color: rgb(248, 249, 250);
+}
+
+.dark .border-gray-200 {
+  border-color: rgb(55, 65, 81);
+}
+
+.dark .border-gray-300 {
+  border-color: rgb(75, 85, 99);
+}
+
+.dark .border-gray-700 {
+  border-color: rgb(55, 65, 81);
+}
+
+.dark .hover\:bg-gray-100:hover {
+  background-color: rgb(55, 65, 81);
+}
+
+.dark .hover\:bg-gray-200:hover {
+  background-color: rgb(75, 85, 99);
 }
 
 /* Focus visible styles for accessibility */

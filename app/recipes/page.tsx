@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { Search, Plus, Heart, Clock, ChefHat, Edit2, Trash2, X, FileDown } from 'lucide-react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
+import { Search, Plus, Heart, Clock, ChefHat, Edit2, Trash2, X, FileDown, Share2, Mic, Sparkles } from 'lucide-react';
 import { meals as defaultMeals } from '@/lib/data/meals';
 import { Meal, MealCategory, MealTag } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
@@ -13,6 +13,12 @@ import { useInfiniteScroll, InfiniteScrollLoader } from '@/components/ui/Infinit
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/Toast';
 import { OptimizedImage } from '@/components/ui/Animations';
+import { NutritionPanel } from '@/components/features/NutritionPanel';
+import { SocialShareButtons } from '@/components/features/SocialShareButtons';
+import { SmartSuggestions, MoreLikeThis } from '@/components/features/SmartSuggestions';
+import { VoiceInputButton } from '@/components/features/VoiceInputButton';
+import { smartSearchMeals } from '@/lib/features/smartSuggestions';
+import { useUserStore } from '@/lib/store/userStore';
 
 const categoryFilters: { value: MealCategory | 'all'; label: string }[] = [
   { value: 'all', label: 'Alles' },
@@ -39,6 +45,10 @@ function RecipesPageContent() {
   const [selectedTags, setSelectedTags] = useState<MealTag[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [selectedRecipe, setSelectedRecipe] = useState<Meal | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  
+  const { currentUser } = useUserStore();
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,38 +65,48 @@ function RecipesPageContent() {
     setIsLoading(false);
   }, []);
   
-  // Filter recipes
-  const filteredRecipes = recipes.filter(recipe => {
-    // Search query
+  // Filter recipes with smart search
+  const filteredRecipes = useMemo(() => {
+    if (!searchQuery && selectedCategory === 'all' && selectedTags.length === 0 && !showFavoritesOnly) {
+      return recipes;
+    }
+
+    let result = recipes;
+
+    // Use smart search if there's a query
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const matchesName = recipe.name.toLowerCase().includes(query);
-      const matchesIngredient = recipe.ingredients.some(i => 
-        i.name.toLowerCase().includes(query)
-      );
-      const matchesTag = recipe.tags.some(t => 
-        t.toLowerCase().includes(query)
-      );
-      if (!matchesName && !matchesIngredient && !matchesTag) return false;
+      const prefs = currentUser ? {
+        favoriteTags: [],
+        dislikedTags: currentUser.preferences.dislikes,
+        preferredCategories: currentUser.preferences.dietary,
+        maxPrepTime: Math.max(
+          currentUser.preferences.maxPrepTime.breakfast,
+          currentUser.preferences.maxPrepTime.lunch,
+          currentUser.preferences.maxPrepTime.dinner
+        ),
+        dietary: currentUser.preferences.dietary,
+      } : undefined;
+      
+      result = smartSearchMeals(recipes, searchQuery, prefs);
     }
-    
-    // Category
-    if (selectedCategory !== 'all' && recipe.category !== selectedCategory) {
-      return false;
+
+    // Apply category filter
+    if (selectedCategory !== 'all') {
+      result = result.filter(r => r.category === selectedCategory);
     }
-    
-    // Tags
-    if (selectedTags.length > 0 && !selectedTags.some(tag => recipe.tags.includes(tag))) {
-      return false;
+
+    // Apply tag filters
+    if (selectedTags.length > 0) {
+      result = result.filter(r => selectedTags.some(tag => r.tags.includes(tag)));
     }
-    
-    // Favorites
-    if (showFavoritesOnly && !recipe.isFavorite) {
-      return false;
+
+    // Apply favorites filter
+    if (showFavoritesOnly) {
+      result = result.filter(r => r.isFavorite);
     }
-    
-    return true;
-  });
+
+    return result;
+  }, [recipes, searchQuery, selectedCategory, selectedTags, showFavoritesOnly, currentUser]);
 
   // Infinite scroll
   const { displayedItems, loaderRef, hasMore, isLoading: isLoadingMore } = useInfiniteScroll({
@@ -104,6 +124,11 @@ function RecipesPageContent() {
       localStorage.setItem('rut-search-history', JSON.stringify(newHistory));
     }
   };
+
+  const handleVoiceSearch = useCallback((query: string) => {
+    handleSearch(query);
+    toast.info(`Zoekresultaten voor: ${query}`);
+  }, [handleSearch]);
   
   const clearSearch = () => {
     setSearchQuery('');
@@ -180,6 +205,11 @@ function RecipesPageContent() {
     URL.revokeObjectURL(url);
     toast.success('Recepten geëxporteerd');
   };
+
+  const favoriteMealIds = useMemo(() => 
+    recipes.filter(r => r.isFavorite).map(r => r.id),
+    [recipes]
+  );
   
   if (isLoading) {
     return (
@@ -195,13 +225,17 @@ function RecipesPageContent() {
     <div className="px-4 py-6 max-w-md mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#2D3436]">
+        <h1 className="text-2xl font-bold text-[#2D3436] dark:text-gray-100">
           Recepten
         </h1>
         <div className="flex items-center gap-2">
+          <VoiceInputButton
+            onSearch={handleVoiceSearch}
+            size="sm"
+          />
           <button
             onClick={handleExportRecipes}
-            className="w-10 h-10 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+            className="w-10 h-10 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             title="Exporteer recepten"
           >
             <FileDown className="w-5 h-5" />
@@ -226,13 +260,13 @@ function RecipesPageContent() {
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
           placeholder="Zoek recepten..."
-          className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4A90A4]"
+          className="w-full pl-10 pr-10 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4A90A4] bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
           aria-label="Zoek recepten"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
             aria-label="Wis zoekopdracht"
           >
             <X className="w-4 h-4 text-gray-400" />
@@ -243,18 +277,40 @@ function RecipesPageContent() {
       {/* Search history */}
       {searchHistory.length > 0 && !searchQuery && (
         <div className="mb-4">
-          <p className="text-xs text-gray-500 mb-2">Recente zoekopdrachten</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Recente zoekopdrachten</p>
           <div className="flex flex-wrap gap-2">
             {searchHistory.slice(0, 5).map((query, index) => (
               <button
                 key={index}
                 onClick={() => handleSearch(query)}
-                className="text-sm px-3 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
+                className="text-sm px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 {query}
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Smart Suggestions Toggle */}
+      <button
+        onClick={() => setShowSuggestions(!showSuggestions)}
+        className="flex items-center gap-2 mb-4 text-sm text-[#4A90A4] hover:text-[#3a7a8c]"
+      >
+        <Sparkles className="w-4 h-4" />
+        {showSuggestions ? 'Verberg suggesties' : 'Toon slimme suggesties'}
+      </button>
+
+      {/* Smart Suggestions */}
+      {showSuggestions && currentUser && (
+        <div className="mb-6">
+          <SmartSuggestions
+            allMeals={recipes}
+            user={currentUser}
+            recentMealIds={[]}
+            favoriteMealIds={favoriteMealIds}
+            onSelectMeal={(meal) => setSelectedRecipe(meal)}
+          />
         </div>
       )}
       
@@ -270,7 +326,7 @@ function RecipesPageContent() {
               'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors',
               selectedCategory === cat.value
                 ? 'bg-[#4A90A4] text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             )}
           >
             {cat.label}
@@ -286,8 +342,8 @@ function RecipesPageContent() {
           className={cn(
             'px-3 py-1.5 rounded-full text-sm flex items-center gap-1 whitespace-nowrap transition-colors',
             showFavoritesOnly
-              ? 'bg-red-100 text-red-700 border border-red-200'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
           )}
         >
           <Heart className={cn('w-3.5 h-3.5', showFavoritesOnly && 'fill-current')} aria-hidden="true" />
@@ -302,7 +358,7 @@ function RecipesPageContent() {
               'px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors',
               selectedTags.includes(tag.value)
                 ? 'bg-[#4A90A4] text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             )}
           >
             {tag.label}
@@ -313,7 +369,7 @@ function RecipesPageContent() {
       {/* Active filters summary */}
       {hasActiveFilters && (
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             {filteredRecipes.length} resultaten
           </p>
           <button
@@ -354,11 +410,11 @@ function RecipesPageContent() {
             <article
               key={recipe.id}
               role="listitem"
-              className="bg-white rounded-xl p-4 border border-gray-200 hover:border-[#4A90A4] transition-colors group"
+              className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 hover:border-[#4A90A4] dark:hover:border-[#4A90A4] transition-colors group"
             >
               <div className="flex items-start gap-4">
                 {/* Image */}
-                <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {recipe.imageUrl ? (
                     <OptimizedImage
                       src={recipe.imageUrl}
@@ -373,7 +429,7 @@ function RecipesPageContent() {
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold text-[#2D3436] truncate">
+                    <h3 className="font-semibold text-[#2D3436] dark:text-gray-200 truncate">
                       {recipe.name}
                     </h3>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -386,7 +442,7 @@ function RecipesPageContent() {
                       </button>
                       <button
                         onClick={() => handleDeleteClick(recipe)}
-                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
+                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                         aria-label={`Verwijder ${recipe.name}`}
                       >
                         <Trash2 className="w-4 h-4" aria-hidden="true" />
@@ -394,7 +450,7 @@ function RecipesPageContent() {
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                  <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mt-1">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" aria-hidden="true" />
                       {recipe.prepTime + recipe.cookTime} min
@@ -406,12 +462,18 @@ function RecipesPageContent() {
                       {recipe.category === 'snack' && 'Snack'}
                     </span>
                   </div>
+
+                  {/* Nutrition Info */}
+                  <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    <span>🔥 {recipe.nutrition.calories} kcal</span>
+                    <span>💪 {recipe.nutrition.protein}g eiwit</span>
+                  </div>
                   
                   <div className="flex flex-wrap gap-1 mt-2">
                     {recipe.tags.slice(0, 3).map(tag => (
                       <span
                         key={tag}
-                        className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full"
+                        className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full"
                       >
                         {tag === 'high-protein' && 'Eiwit'}
                         {tag === 'quick' && 'Snel'}
@@ -423,30 +485,37 @@ function RecipesPageContent() {
                       </span>
                     ))}
                     {recipe.tags.length > 3 && (
-                      <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">
+                      <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">
                         +{recipe.tags.length - 3}
                       </span>
                     )}
                   </div>
                 </div>
                 
-                {/* Favorite button */}
-                <button
-                  onClick={() => toggleFavorite(recipe.id)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                  aria-label={recipe.isFavorite ? 'Verwijder van favorieten' : 'Voeg toe aan favorieten'}
-                  aria-pressed={recipe.isFavorite}
-                >
-                  <Heart
-                    className={cn(
-                      'w-5 h-5',
-                      recipe.isFavorite
-                        ? 'fill-red-500 text-red-500'
-                        : 'text-gray-400'
-                    )}
-                    aria-hidden="true"
+                {/* Actions */}
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => toggleFavorite(recipe.id)}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                    aria-label={recipe.isFavorite ? 'Verwijder van favorieten' : 'Voeg toe aan favorieten'}
+                    aria-pressed={recipe.isFavorite}
+                  >
+                    <Heart
+                      className={cn(
+                        'w-5 h-5',
+                        recipe.isFavorite
+                          ? 'fill-red-500 text-red-500'
+                          : 'text-gray-400'
+                      )}
+                      aria-hidden="true"
+                    />
+                  </button>
+                  <SocialShareButtons
+                    meal={recipe}
+                    type="recipe"
+                    className="!w-9 !h-9 !p-2"
                   />
-                </button>
+                </div>
               </div>
             </article>
           ))}
@@ -481,11 +550,38 @@ function RecipesPageContent() {
         description="Weet je zeker dat je dit recept wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
         itemName={recipeToDelete?.name}
       />
+
+      {/* Recipe Detail Modal */}
+      {selectedRecipe && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-gray-800 p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{selectedRecipe.name}</h3>
+              <button
+                onClick={() => setSelectedRecipe(null)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              <NutritionPanel meal={selectedRecipe} />
+              <MoreLikeThis
+                meal={selectedRecipe}
+                allMeals={recipes}
+                onSelectMeal={(meal) => setSelectedRecipe(meal)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-// Main export with Suspense
+// Import useMemo
+import { useMemo } from 'react';
+
 export default function RecipesPage() {
   return (
     <Suspense fallback={<RecipesListSkeleton />}>

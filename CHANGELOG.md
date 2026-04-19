@@ -1,5 +1,90 @@
 # Rut App - Changelog
 
+## Versie 2.2.0 - 10 Extra Features (2025-04-19)
+
+### 1. Social Sharing ✅
+- **Native Share API** - Deel recepten via het native deel menu
+- **Weekmenu delen** - Deel het weekmenu als tekst
+- **Boodschappenlijst delen** - Deel de boodschappenlijst
+- **Uitnodigingslinks** - Genereer uitnodigingslinks voor huishouden
+- **SocialShareButtons component** - Uniforme deel interface
+- **InviteLinkGenerator** - Genereer en kopieer uitnodigingslinks
+- **WhatsApp, Telegram, Email** - Directe deel opties naar populaire apps
+
+### 2. Meal Prep Mode ✅
+- **Prep dag indicator** - Markeer een dag als meal prep dag
+- **Batch cooking planning** - Identificeer maaltijden geschikt voor meal prep
+- **Bewaartips per recept** - Automatische opslag instructies
+- **Tijdsinschatting** - Bereken totale prep + kook tijd
+- **StorageTipCard component** - Gedetailleerde bewaar instructies
+- **PrepDayBadge** - Visuele indicator op dag kaarten
+
+### 3. Smart Suggestions ✅
+- **AI suggesties** - Slimme recept aanbevelingen op basis van voorkeuren
+- **"Meer van dit"** - Vind vergelijkbare recepten
+- **Seizoensgebonden** - Automatische seizoens suggesties
+- **Smart search** - Fuzzy matching met gebruikersvoorkeuren
+- **SmartSuggestions component** - Geïntegreerde suggestie UI
+- **MoreLikeThis component** - Vergelijkbare recepten weergave
+
+### 4. Price Tracking ✅
+- **Supermarkt vergelijking** - Vergelijk prijzen tussen winkels
+- **Goedkoopste suggestie** - Automatische beste winkel keuze
+- **Budget overzicht** - Weekelijkse uitgaven tracking
+- **Prijs historie** - Bewaar en vergelijk historische prijzen
+- **Aanbiedingen** - Highlight beste deals
+- **PriceComparison component** - Visuele prijsvergelijking
+
+### 5. Nutrition Info ✅
+- **Calorieën per recept** - Automatische calorie berekening
+- **Macro's** - Eiwit, koolhydraten, vet weergave
+- **Dagelijkse overzichten** - Totale voedingswaarden per dag
+- **Weekelijkse statistieken** - Gemiddelden en trends
+- **NutritionPanel component** - Compacte en volledige weergave
+- **Voedingswaarden in recepten** - Directe weergave in recept lijst
+
+### 6. Voice Input ✅
+- **Spraak naar tekst** - Zoeken met je stem
+- **Voice commands** - "Plan pasta voor morgen"
+- **Nederlandse taal** - NL-NL ondersteuning
+- **Command parsing** - Slimme commando interpretatie
+- **VoiceInputButton component** - Microfoon knop met feedback
+- **VoiceCommandHelp** - Overzicht van beschikbare commando's
+
+### 7. Barcode Scanner ✅
+- **Camera scanning** - Scan producten met camera
+- **Handmatige invoer** - Barcode nummer invoeren
+- **Auto-aanvullen** - Product details automatisch ophalen
+- **Snel toevoegen** - Snelle toevoeg knoppen voor veelgebruikte items
+- **Recent gescand** - Geschiedenis van gescande producten
+- **BarcodeScanner component** - Volledige scanner interface
+
+### 8. Dark Mode Toggle ✅
+- **System preference** - Respecteer systeem instelling
+- **Manual toggle** - Handmatig licht/donker schakelen
+- **Smooth transition** - Vloeiende overgang tussen thema's
+- **CSS variables** - Consistente dark mode styling
+- **DarkModeToggle component** - Schakelaar in instellingen
+- **useDarkMode hook** - Dark mode state management
+
+### 9. Export/Import ✅
+- **JSON backup** - Volledige data export
+- **CSV export** - Weekplanning en boodschappen als spreadsheet
+- **Import functionaliteit** - Herstel van backup
+- **Data validatie** - Controleer backup integriteit
+- **ExportImportPanel component** - Geïntegreerde export/import UI
+- **Versie compatibiliteit** - Checks voor backup versies
+
+### 10. Collaborative Editing ✅
+- **Real-time sync** - Simulatie van real-time synchronisatie
+- **Conflict resolution** - UI voor het oplossen van conflicten
+- **Activity log** - Geschiedenis van alle wijzigingen
+- **Huishouden beheer** - Leden toevoegen/verwijderen
+- **Online status** - Zie wie er online is
+- **CollaborativeStatus component** - Volledige samenwerking UI
+
+---
+
 ## Versie 2.1.0 - 10 Critieke Features (2025-04-19)
 
 ### 1. PWA Setup ✅
