@@ -78,9 +78,9 @@ export function generateShoppingList(week: Week): ShoppingList {
   const byStoreMap = new Map<Store, Map<StoreCategory, ShoppingItem[]>>();
   let totalCost = 0;
   
-  for (const [ingredientId, data] of aggregated) {
+  aggregated.forEach((data, ingredientId) => {
     const ingredient = ingredients.find(i => i.id === ingredientId);
-    if (!ingredient) continue;
+    if (!ingredient) return;
     
     // Bereken prijs
     let price = ingredient.estimatedPrice;
@@ -122,7 +122,7 @@ export function generateShoppingList(week: Week): ShoppingList {
     }
     
     storeMap.get(category)!.push(item);
-  }
+  });
   
   // Converteer naar array structuur
   const byStore: StoreSection[] = [];

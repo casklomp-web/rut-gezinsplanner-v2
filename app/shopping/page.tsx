@@ -1,9 +1,14 @@
-"use client";
+'use client';
 
 import { useWeekStore } from "@/lib/store/weekStore";
-import { Check, Copy } from "lucide-react";
+import { ShoppingListSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/ErrorBoundary";
+import { Button } from "@/components/ui/Button";
+import { Check, Copy, ShoppingCart, CalendarDays } from "lucide-react";
 import { useState } from "react";
 import { exportShoppingListAsText } from "@/lib/logic/shoppingList";
+import { cn } from "@/lib/utils";
+import { toast } from "@/components/ui/Toast";
 
 const storeNames: Record<string, string> = {
   aldi: "ALDI",
@@ -28,7 +33,7 @@ const categoryNames: Record<string, string> = {
 };
 
 export default function ShoppingPage() {
-  const { currentWeek } = useWeekStore();
+  const { currentWeek, isLoading } = useWeekStore();
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
   
@@ -49,21 +54,43 @@ export default function ShoppingPage() {
     const text = exportShoppingListAsText(shoppingList);
     navigator.clipboard.writeText(text);
     setCopied(true);
+    toast.success('Gekopieerd naar klembord');
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (isLoading) {
+    return (
+      <div className="px-4 py-6 max-w-md mx-auto">
+        <ShoppingListSkeleton />
+      </div>
+    );
+  }
 
   if (!shoppingList) {
     return (
       <div className="px-4 py-6 max-w-md mx-auto">
-        <h1 className="text-2xl font-bold text-[#2D3436] mb-4">
-          Boodschappen
-        </h1>
-        <p className="text-gray-500 text-center py-8">
-          Geen boodschappenlijst beschikbaar. Genereer eerst een week.
-        </p>
+        <EmptyState
+          icon={ShoppingCart}
+          title="Geen boodschappenlijst"
+          description="Genereer eerst een weekplanning"
+          action={
+            <Button onClick={() => window.location.href = '/week'}>
+              <CalendarDays className="w-4 h-4 mr-2" />
+              Naar weekoverzicht
+            </Button>
+          }
+        />
       </div>
     );
   }
+
+  const checkedCount = checkedItems.size;
+  const totalCount = shoppingList.byStore.reduce(
+    (sum, store) => sum + store.categories.reduce(
+      (catSum, cat) => catSum + cat.items.length, 0
+    ), 0
+  );
+  const progress = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
 
   return (
     <div className="px-4 py-6 max-w-md mx-auto">
@@ -84,6 +111,23 @@ export default function ShoppingPage() {
           {copied ? <Check size={16} /> : <Copy size={16} />}
           {copied ? "Gekopieerd!" : "Kopieer"}
         </button>
+      </div>
+
+      {/* Progress */}
+      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-gray-600">Voortgang</span>
+          <span className="text-sm font-medium text-[#4A90A4]">{progress}%</span>
+        </div>
+        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-[#4A90A4] transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <p className="text-xs text-gray-500 mt-2">
+          {checkedCount} van {totalCount} items
+        </p>
       </div>
 
       {/* Totaal */}
@@ -126,19 +170,18 @@ export default function ShoppingPage() {
                           onClick={() => toggleItem(item.id)}
                           className="flex items-center gap-3 w-full text-left"
                         >
-                          <div className={`
-                            w-5 h-5 rounded border flex items-center justify-center transition-colors
-                            ${isChecked 
+                          <div className={cn(
+                            "w-5 h-5 rounded border flex items-center justify-center transition-colors",
+                            isChecked 
                               ? "bg-[#7CB342] border-[#7CB342]" 
                               : "border-gray-300"
-                            }
-                          `}>
+                          )}>
                             {isChecked && <Check size={12} className="text-white" />}
                           </div>
-                          <span className={`
-                            text-sm flex-1
-                            ${isChecked ? "text-gray-400 line-through" : "text-[#2D3436]"}
-                          `}>
+                          <span className={cn(
+                            "text-sm flex-1",
+                            isChecked ? "text-gray-400 line-through" : "text-[#2D3436]"
+                          )}>
                             {item.displayText}
                           </span>
                           {item.isFresh && (

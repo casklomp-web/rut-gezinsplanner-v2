@@ -1,25 +1,48 @@
-"use client";
+'use client';
 
 import { useWeekStore } from "@/lib/store/weekStore";
+import { WeekViewSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/ErrorBoundary";
 import { Button } from "@/components/ui/Button";
-import { RefreshCw, ShoppingCart } from "lucide-react";
+import { RefreshCw, ShoppingCart, CalendarDays } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 import { WeekDayCard } from "@/components/week/WeekDayCard";
+import { toast } from "@/components/ui/Toast";
 
 export default function WeekPage() {
-  const { currentWeek, generateNewWeek, generateShoppingList } = useWeekStore();
+  const { currentWeek, generateNewWeek, generateShoppingList, isLoading } = useWeekStore();
+
+  if (isLoading) {
+    return (
+      <div className="px-4 py-6 max-w-md mx-auto">
+        <WeekViewSkeleton />
+      </div>
+    );
+  }
 
   if (!currentWeek) {
     return (
       <div className="px-4 py-6 max-w-md mx-auto">
-        <p className="text-center text-gray-500">Geen week gepland</p>
-        <Button onClick={generateNewWeek} className="w-full mt-4">
-          Genereer week
-        </Button>
+        <EmptyState
+          icon={CalendarDays}
+          title="Geen week gepland"
+          description="Genereer een week om je maaltijdplanning te zien"
+          action={
+            <Button onClick={generateNewWeek}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Week genereren
+            </Button>
+          }
+        />
       </div>
     );
   }
+
+  const handleGenerateShoppingList = () => {
+    generateShoppingList();
+    toast.success('Boodschappenlijst gegenereerd');
+  };
 
   return (
     <div className="px-4 py-6 max-w-md mx-auto">
@@ -30,8 +53,7 @@ export default function WeekPage() {
             Week {currentWeek.weekNumber}
           </h1>
           <p className="text-sm text-gray-500">
-            {format(parseISO(currentWeek.startDate), "d MMM", { locale: nl })} - {" "}
-            {format(parseISO(currentWeek.endDate), "d MMM", { locale: nl })}
+            {format(parseISO(currentWeek.startDate), "d MMM", { locale: nl })} - {format(parseISO(currentWeek.endDate), "d MMM", { locale: nl })}
           </p>
         </div>
         <Button 
@@ -53,7 +75,7 @@ export default function WeekPage() {
 
       {/* Boodschappen knop */}
       <Button 
-        onClick={generateShoppingList}
+        onClick={handleGenerateShoppingList}
         className="w-full mt-6"
         size="lg"
       >

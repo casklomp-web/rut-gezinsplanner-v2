@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { ToastProvider } from "@/components/ui/Toast";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: "Rut - Gezinsplanner",
@@ -29,10 +31,14 @@ export default function RootLayout({
   return (
     <html lang="nl">
       <body className="bg-[#F8F9FA] text-[#2D3436] antialiased">
-        <main className="pb-20 min-h-screen">
-          {children}
-        </main>
-        <BottomNav />
+        <ErrorBoundary>
+          <ToastProvider>
+            <main className="pb-20 min-h-screen">
+              {children}
+            </main>
+            <BottomNav />
+          </ToastProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

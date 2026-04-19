@@ -12,6 +12,8 @@ import { useUserStore } from "./userStore";
 interface WeekState {
   currentWeek: Week | null;
   weekHistory: Week[];
+  isLoading: boolean;
+  error: string | null;
   
   // Actions
   generateNewWeek: () => void;
@@ -22,6 +24,8 @@ interface WeekState {
   toggleCheckin: (dayId: string, checkinType: keyof Day["checkins"]) => void;
   swapMeal: (dayId: string, mealType: "breakfast" | "lunch" | "dinner", newMealId: string) => void;
   generateShoppingList: () => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
   
   // Getters
   getToday: () => Day | undefined;
@@ -33,19 +37,28 @@ export const useWeekStore = create<WeekState>()(
     (set, get) => ({
       currentWeek: null,
       weekHistory: [],
+      isLoading: false,
+      error: null,
       
       generateNewWeek: () => {
         const primaryUser = useUserStore.getState().getPrimaryUser();
         if (!primaryUser) return;
         
-        const newWeek = generateWeek(new Date(), primaryUser);
+        set({ isLoading: true });
         
-        set(state => ({
-          currentWeek: newWeek,
-          weekHistory: state.currentWeek 
-            ? [state.currentWeek, ...state.weekHistory].slice(0, 4)
-            : state.weekHistory
-        }));
+        try {
+          const newWeek = generateWeek(new Date(), primaryUser);
+          
+          set(state => ({
+            currentWeek: newWeek,
+            weekHistory: state.currentWeek 
+              ? [state.currentWeek, ...state.weekHistory].slice(0, 4)
+              : state.weekHistory,
+            isLoading: false
+          }));
+        } catch (error) {
+          set({ error: 'Failed to generate week', isLoading: false });
+        }
       },
       
       setCurrentWeek: (week) => set({ currentWeek: week }),
@@ -163,6 +176,9 @@ export const useWeekStore = create<WeekState>()(
           currentWeek: { ...week, shoppingList, updatedAt: new Date() }
         });
       },
+      
+      setLoading: (loading) => set({ isLoading: loading }),
+      setError: (error) => set({ error }),
       
       getToday: () => {
         const today = new Date().toISOString().split("T")[0];
