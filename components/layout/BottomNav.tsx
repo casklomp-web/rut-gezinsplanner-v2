@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, ShoppingCart, ChefHat, User } from "lucide-react";
+import { Home, Calendar, ShoppingCart, ChefHat, User, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHaptic, HAPTIC_PATTERNS } from "@/components/providers/HapticProvider";
 
 const navItems = [
   { href: "/", label: "Vandaag", icon: Home },
   { href: "/week", label: "Week", icon: Calendar },
+  { href: "/tasks", label: "Taken", icon: ClipboardList },
   { href: "/shopping", label: "Boodschappen", icon: ShoppingCart },
   { href: "/recipes", label: "Recepten", icon: ChefHat },
-  { href: "/profile", label: "Profiel", icon: User },
 ];
 
 export function BottomNav() {
@@ -31,7 +31,7 @@ export function BottomNav() {
       role="navigation"
       aria-label="Hoofdnavigatie"
     >
-      <div className="flex justify-around items-center h-16 max-w-md mx-auto">
+      <div className="flex justify-around items-center h-16 max-w-lg mx-auto px-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
