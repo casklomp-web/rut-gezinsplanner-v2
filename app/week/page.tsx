@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
-import WeekPlanner from './WeekPlanner'
+import { WeekPlanner } from '@/components/week/week-planner'
+import { AppShell } from '@/components/navigation/app-shell'
 
 export const dynamic = 'force-dynamic'
 
 export default async function WeekPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   // Check if user is logged in
   const { data: { user } } = await supabase.auth.getUser()
@@ -14,5 +15,9 @@ export default async function WeekPage() {
     redirect('/login')
   }
 
-  return <WeekPlanner />
+  return (
+    <AppShell>
+      <WeekPlanner />
+    </AppShell>
+  )
 }
