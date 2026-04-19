@@ -1,16 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { WeekHeader } from './week-header'
 import { DayCard } from './day-card'
 import { RecipeSelector } from '../recipes/recipe-selector'
+import { EmptyWeekState } from './empty-week-state'
 import { mockWeekPlan, mockRecipes, type Recipe, type DayPlan } from '@/lib/app-data'
 import { Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function WeekPlanner() {
-  // State for week plan (start with mock data, but allow updates)
-  const [weekPlan, setWeekPlan] = useState<DayPlan[]>(mockWeekPlan)
+  // State for week plan with localStorage persistence
+  const [weekPlan, setWeekPlan] = useLocalStorage<DayPlan[]>('rut-week-plan', mockWeekPlan)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [isSelectorOpen, setIsSelectorOpen] = useState(false)
   
@@ -45,6 +47,20 @@ export function WeekPlanner() {
     setSelectedDate(null)
   }
 
+  const handleAutoFill = () => {
+    // Auto-fill week with random recipes
+    const shuffled = [...mockRecipes].sort(() => 0.5 - Math.random())
+    setWeekPlan((prev) =>
+      prev.map((day, index) => ({
+        ...day,
+        meals: {
+          ...day.meals,
+          dinner: shuffled[index % shuffled.length],
+        },
+      }))
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <WeekHeader />
@@ -77,18 +93,22 @@ export function WeekPlanner() {
           </div>
         </div>
 
-        {/* Day Cards */}
-        <div className="space-y-3">
-          {weekPlan.map((day, index) => (
-            <DayCard 
-              key={day.date} 
-              day={day} 
-              isToday={index === todayIndex}
-              onAddMeal={handleAddMeal}
-              onChangeMeal={handleAddMeal}
-            />
-          ))}
-        </div>
+        {/* Empty State or Day Cards */}
+        {plannedMeals === 0 ? (
+          <EmptyWeekState onAutoFill={handleAutoFill} />
+        ) : (
+          <div className="space-y-3">
+            {weekPlan.map((day, index) => (
+              <DayCard 
+                key={day.date} 
+                day={day} 
+                isToday={index === todayIndex}
+                onAddMeal={handleAddMeal}
+                onChangeMeal={handleAddMeal}
+              />
+            ))}
+          </div>
+        )}
       </main>
 
       {/* Recipe Selector Modal */}
