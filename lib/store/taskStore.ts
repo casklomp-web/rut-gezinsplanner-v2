@@ -6,6 +6,16 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Task, TaskStatus, TaskPriority, RecurrenceType, FamilyMember, TaskFilters, TaskStats, TaskCompletion, TaskReminder, TaskNotificationPrefs } from "@/lib/types/task";
 import { uuidv4 } from "@/lib/utils";
+import { 
+  notifyTaskCreated, 
+  notifyTaskUpdated, 
+  notifyTaskDeleted, 
+  notifyTaskCompleted, 
+  notifyTaskReopened,
+  notifyTaskArchived,
+  validateTask,
+  TaskError 
+} from "@/lib/tasks/errors";
 
 // Mock family members for development
 const mockFamilyMembers: FamilyMember[] = [
@@ -123,6 +133,12 @@ export const useTaskStore = create<TaskState>()(
       filters: {},
       
       createTask: (taskData) => {
+        // Validation
+        const validationError = validateTask(taskData.title, taskData.assignedTo);
+        if (validationError) {
+          throw validationError;
+        }
+
         const newTask: Task = {
           ...taskData,
           id: uuidv4(),
@@ -135,10 +151,16 @@ export const useTaskStore = create<TaskState>()(
           tasks: [newTask, ...state.tasks],
         }));
         
+        notifyTaskCreated(newTask.title);
         return newTask;
       },
       
       updateTask: (taskId, updates) => {
+        const task = get().tasks.find(t => t.id === taskId);
+        if (!task) {
+          throw new TaskError('Taak niet gevonden', 'TASK_NOT_FOUND');
+        }
+
         set(state => ({
           tasks: state.tasks.map(task =>
             task.id === taskId
@@ -146,12 +168,21 @@ export const useTaskStore = create<TaskState>()(
               : task
           ),
         }));
+
+        notifyTaskUpdated(task.title);
       },
       
       deleteTask: (taskId) => {
+        const task = get().tasks.find(t => t.id === taskId);
+        if (!task) {
+          throw new TaskError('Taak niet gevonden', 'TASK_NOT_FOUND');
+        }
+
         set(state => ({
           tasks: state.tasks.filter(task => task.id !== taskId),
         }));
+
+        notifyTaskDeleted(task.title);
       },
       
       toggleTaskStatus: (taskId) => {
@@ -173,6 +204,11 @@ export const useTaskStore = create<TaskState>()(
       },
       
       completeTask: (taskId, notes, completedBy = "1") => {
+        const task = get().tasks.find(t => t.id === taskId);
+        if (!task) {
+          throw new TaskError('Taak niet gevonden', 'TASK_NOT_FOUND');
+        }
+
         const completion: TaskCompletion = {
           id: uuidv4(),
           completedAt: new Date(),
@@ -192,9 +228,13 @@ export const useTaskStore = create<TaskState>()(
               : task
           ),
         }));
+
+        notifyTaskCompleted(task.title);
       },
-      
+
       uncompleteTask: (taskId) => {
+        const task = get().tasks.find(t => t.id === taskId);
+
         set(state => ({
           tasks: state.tasks.map(task =>
             task.id === taskId
@@ -207,9 +247,15 @@ export const useTaskStore = create<TaskState>()(
               : task
           ),
         }));
+
+        if (task) {
+          notifyTaskReopened(task.title);
+        }
       },
-      
+
       archiveTask: (taskId) => {
+        const task = get().tasks.find(t => t.id === taskId);
+
         set(state => ({
           tasks: state.tasks.map(task =>
             task.id === taskId
@@ -217,6 +263,10 @@ export const useTaskStore = create<TaskState>()(
               : task
           ),
         }));
+
+        if (task) {
+          notifyTaskArchived(task.title);
+        }
       },
       
       unarchiveTask: (taskId) => {

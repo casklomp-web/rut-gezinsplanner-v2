@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Filter, Search, CheckCircle2, Clock, AlertCircle, RotateCcw } from 'lucide-react';
+import { Plus, Filter, Search, Clock, AlertCircle, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { TaskCard } from './TaskCard';
 import { TaskModal } from './TaskModal';
 import { useTaskStore } from '@/lib/store/taskStore';
 import { Task, TaskStatus } from '@/lib/types/task';
-import { EmptyState } from '@/components/ui/ErrorBoundary';
+import { NoTasksEmptyState, NoSearchResultsEmptyState, AllTasksCompletedEmptyState, NoOverdueTasksEmptyState } from './EmptyStates';
 
 type FilterTab = 'all' | 'todo' | 'in-progress' | 'done' | 'overdue';
 
@@ -182,31 +182,19 @@ export function TaskBoard() {
       {/* Task List */}
       <div className="space-y-3">
         {filteredTasks.length === 0 ? (
-          <EmptyState
-            icon={CheckCircle2}
-            title={
-              activeTab === 'overdue'
-                ? 'Geen achterstallige taken'
-                : activeTab === 'done'
-                ? 'Nog geen taken afgerond'
-                : 'Geen taken gevonden'
-            }
-            description={
-              searchQuery
-                ? 'Probeer een andere zoekterm'
-                : activeTab === 'all'
-                ? 'Maak je eerste taak om te beginnen'
-                : 'Er zijn geen taken in deze categorie'
-            }
-            action={
-              activeTab !== 'done' && !searchQuery ? (
-                <Button onClick={handleCreateTask} size="sm">
-                  <Plus className="w-4 h-4 mr-1" />
-                  Taak aanmaken
-                </Button>
-              ) : undefined
-            }
-          />
+          searchQuery ? (
+            <NoSearchResultsEmptyState onClear={() => setSearchQuery('')} />
+          ) : activeTab === 'overdue' ? (
+            <NoOverdueTasksEmptyState />
+          ) : activeTab === 'done' ? (
+            <AllTasksCompletedEmptyState />
+          ) : activeTab === 'all' && stats.total === 0 ? (
+            <NoTasksEmptyState onCreate={handleCreateTask} />
+          ) : (
+            <div className="text-center py-8 text-gray-400">
+              <p>Geen taken in deze categorie</p>
+            </div>
+          )
         ) : (
           filteredTasks.map((task) => (
             <TaskCard
