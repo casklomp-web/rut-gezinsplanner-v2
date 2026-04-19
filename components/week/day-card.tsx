@@ -8,9 +8,10 @@ interface DayCardProps {
   day: DayPlan
   isToday?: boolean
   onAddMeal?: (date: string) => void
+  onChangeMeal?: (date: string) => void
 }
 
-export function DayCard({ day, isToday = false, onAddMeal }: DayCardProps) {
+export function DayCard({ day, isToday = false, onAddMeal, onChangeMeal }: DayCardProps) {
   const hasDinner = !!day.meals.dinner
   
   return (
@@ -52,7 +53,10 @@ export function DayCard({ day, isToday = false, onAddMeal }: DayCardProps) {
       {/* Meal Content */}
       <div className="p-4">
         {hasDinner ? (
-          <div className="group cursor-pointer">
+          <div 
+            className="group cursor-pointer"
+            onClick={() => onChangeMeal?.(day.date)}
+          >
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
