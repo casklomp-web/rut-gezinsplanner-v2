@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Calendar, User, Bell, Repeat, Tag, AlertCircle } from 'lucide-react';
+import { X, Calendar, User, Bell, Tag, AlertCircle } from 'lucide-react';
 import { cn, formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { Task, TaskPriority, RecurrenceType, FamilyMember, TaskReminder, TaskNotificationPrefs } from '@/lib/types/task';
 import { useTaskStore } from '@/lib/store/taskStore';
+import { RecurrenceSelector } from './RecurrenceSelector';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -17,13 +18,6 @@ const priorityOptions: { value: TaskPriority; label: string; color: string }[] =
   { value: 'low', label: 'Laag', color: 'bg-gray-100 text-gray-700' },
   { value: 'medium', label: 'Normaal', color: 'bg-blue-100 text-blue-700' },
   { value: 'high', label: 'Hoog', color: 'bg-red-100 text-red-700' },
-];
-
-const recurrenceOptions: { value: RecurrenceType; label: string }[] = [
-  { value: 'none', label: 'Eenmalig' },
-  { value: 'daily', label: 'Dagelijks' },
-  { value: 'weekly', label: 'Wekelijks' },
-  { value: 'monthly', label: 'Maandelijks' },
 ];
 
 export function TaskModal({ isOpen, onClose, task }: TaskModalProps) {
@@ -308,37 +302,12 @@ export function TaskModal({ isOpen, onClose, task }: TaskModalProps) {
 
           {/* Recurrence */}
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Repeat className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Herhaling
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <select
-                value={recurrence}
-                onChange={(e) => setRecurrence(e.target.value as RecurrenceType)}
-                className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#4A90A4]"
-              >
-                {recurrenceOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              {recurrence !== 'none' && (
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="date"
-                    value={recurrenceEndDate}
-                    onChange={(e) => setRecurrenceEndDate(e.target.value)}
-                    placeholder="Einddatum (optioneel)"
-                    className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#4A90A4] text-sm"
-                  />
-                </div>
-              )}
-            </div>
+            <RecurrenceSelector
+              value={recurrence}
+              onChange={setRecurrence}
+              endDate={recurrenceEndDate}
+              onEndDateChange={setRecurrenceEndDate}
+            />
           </div>
 
           {/* Reminder */}

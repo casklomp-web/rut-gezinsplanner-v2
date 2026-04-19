@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Clock, AlertCircle, RotateCcw, ChevronDown, ChevronUp, Trash2, Edit2, User, Bell, Repeat, History } from 'lucide-react';
+import { Check, Clock, AlertCircle, ChevronDown, ChevronUp, Trash2, Edit2, User, Bell, History } from 'lucide-react';
 import { cn, formatRelativeDate, getInitials, isOverdue } from '@/lib/utils';
 import { Task, TaskStatus, TaskPriority } from '@/lib/types/task';
 import { useTaskStore } from '@/lib/store/taskStore';
 import { DeleteConfirmModal } from '@/components/ui/DeleteConfirmModal';
+import { RecurrenceBadge } from './RecurrenceSelector';
 
 interface TaskCardProps {
   task: Task;
@@ -70,17 +71,6 @@ export function TaskCard({ task, onEdit, expanded = false, onToggleExpand }: Tas
     deleteTask(task.id);
     setShowDeleteModal(false);
   };
-
-  const getRecurrenceLabel = () => {
-    switch (task.recurrence.type) {
-      case 'daily': return 'Dagelijks';
-      case 'weekly': return 'Wekelijks';
-      case 'monthly': return 'Maandelijks';
-      default: return null;
-    }
-  };
-
-  const recurrenceLabel = getRecurrenceLabel();
 
   return (
     <>
@@ -181,12 +171,7 @@ export function TaskCard({ task, onEdit, expanded = false, onToggleExpand }: Tas
                 )}
 
                 {/* Recurrence Indicator */}
-                {recurrenceLabel && (
-                  <span className="inline-flex items-center gap-1 text-xs text-[#4A90A4] bg-[#4A90A4]/10 px-1.5 py-0.5 rounded">
-                    <RotateCcw className="w-3 h-3" />
-                    {recurrenceLabel}
-                  </span>
-                )}
+                <RecurrenceBadge type={task.recurrence.type} endDate={task.recurrence.endDate} />
 
                 {/* Reminder Indicator */}
                 {task.reminder?.enabled && (
