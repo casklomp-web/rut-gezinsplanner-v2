@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Calendar, User, Bell, Tag, AlertCircle } from 'lucide-react';
+import { X, Calendar, User, Tag, AlertCircle } from 'lucide-react';
 import { cn, formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { Task, TaskPriority, RecurrenceType, FamilyMember, TaskReminder, TaskNotificationPrefs } from '@/lib/types/task';
 import { useTaskStore } from '@/lib/store/taskStore';
 import { RecurrenceSelector } from './RecurrenceSelector';
+import { ReminderPicker } from './ReminderPicker';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -312,40 +313,15 @@ export function TaskModal({ isOpen, onClose, task }: TaskModalProps) {
 
           {/* Reminder */}
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Bell className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Herinnering
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setReminderEnabled(!reminderEnabled)}
-                className={cn(
-                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-                  reminderEnabled ? 'bg-[#4A90A4]' : 'bg-gray-300'
-                )}
-              >
-                <span
-                  className={cn(
-                    'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-                    reminderEnabled ? 'translate-x-6' : 'translate-x-1'
-                  )}
-                />
-              </button>
-            </div>
-            {reminderEnabled && (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Tijd:</span>
-                <input
-                  type="time"
-                  value={reminderTime}
-                  onChange={(e) => setReminderTime(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#4A90A4]"
-                />
-              </div>
-            )}
+            <ReminderPicker
+              reminder={reminderEnabled ? { enabled: true, time: reminderTime } : undefined}
+              onChange={(reminder) => {
+                setReminderEnabled(reminder?.enabled || false);
+                if (reminder?.time) setReminderTime(reminder.time);
+              }}
+              notifications={{ push: notificationPush, telegram: false, email: false }}
+              onNotificationsChange={(prefs) => setNotificationPush(prefs.push)}
+            />
           </div>
 
           {/* Tags */}
