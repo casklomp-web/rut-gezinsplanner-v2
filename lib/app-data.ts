@@ -177,3 +177,115 @@ export const mockHousehold: Household = {
   adults: 2,
   children: 2,
 }
+
+// Recipe Ingredients (mock data - in real app this comes from database)
+export interface Ingredient {
+  name: string
+  amount: number
+  unit: string
+  category: 'groente' | 'vlees' | 'zuivel' | 'overig'
+}
+
+export const recipeIngredients: Record<string, Ingredient[]> = {
+  'r1': [
+    { name: 'Pasta', amount: 400, unit: 'g', category: 'overig' },
+    { name: 'Cherry tomaten', amount: 300, unit: 'g', category: 'groente' },
+    { name: 'Courgette', amount: 2, unit: 'stuks', category: 'groente' },
+    { name: 'Knoflook', amount: 3, unit: 'teentjes', category: 'groente' },
+    { name: 'Olijfolie', amount: 3, unit: 'el', category: 'overig' },
+    { name: 'Parmezaan', amount: 50, unit: 'g', category: 'zuivel' },
+    { name: 'Basilicum', amount: 1, unit: 'handje', category: 'groente' },
+  ],
+  'r2': [
+    { name: 'Zalmfilet', amount: 400, unit: 'g', category: 'vlees' },
+    { name: 'Groene asperges', amount: 300, unit: 'g', category: 'groente' },
+    { name: 'Citroen', amount: 1, unit: 'stuk', category: 'groente' },
+    { name: 'Olijfolie', amount: 2, unit: 'el', category: 'overig' },
+    { name: 'Dille', amount: 1, unit: 'el', category: 'groente' },
+  ],
+  'r3': [
+    { name: 'Kipfilet', amount: 500, unit: 'g', category: 'vlees' },
+    { name: 'Curry pasta', amount: 2, unit: 'el', category: 'overig' },
+    { name: 'Kokosmelk', amount: 400, unit: 'ml', category: 'overig' },
+    { name: 'Paprika', amount: 2, unit: 'stuks', category: 'groente' },
+    { name: 'Ui', amount: 1, unit: 'stuk', category: 'groente' },
+    { name: 'Basmatirijst', amount: 300, unit: 'g', category: 'overig' },
+  ],
+  'r4': [
+    { name: 'Aubergine', amount: 2, unit: 'stuks', category: 'groente' },
+    { name: 'Courgette', amount: 2, unit: 'stuks', category: 'groente' },
+    { name: 'Paprika', amount: 2, unit: 'stuks', category: 'groente' },
+    { name: 'Tomatenblokjes', amount: 400, unit: 'g', category: 'groente' },
+    { name: 'Knoflook', amount: 4, unit: 'teentjes', category: 'groente' },
+    { name: 'Tijm', amount: 2, unit: 'takjes', category: 'groente' },
+  ],
+  'r5': [
+    { name: 'Biefstuk', amount: 400, unit: 'g', category: 'vlees' },
+    { name: 'Champignons', amount: 250, unit: 'g', category: 'groente' },
+    { name: 'Sperziebonen', amount: 300, unit: 'g', category: 'groente' },
+    { name: 'Boter', amount: 50, unit: 'g', category: 'zuivel' },
+    { name: 'Tijm', amount: 2, unit: 'takjes', category: 'groente' },
+  ],
+  'r6': [
+    { name: 'Tomaten', amount: 1, unit: 'kg', category: 'groente' },
+    { name: 'Ui', amount: 2, unit: 'stuks', category: 'groente' },
+    { name: 'Knoflook', amount: 3, unit: 'teentjes', category: 'groente' },
+    { name: 'Bouillon', amount: 500, unit: 'ml', category: 'overig' },
+    { name: 'Room', amount: 100, unit: 'ml', category: 'zuivel' },
+    { name: 'Basilicum', amount: 1, unit: 'handje', category: 'groente' },
+  ],
+}
+
+// Generate shopping list from week plan
+export function generateShoppingListFromWeekPlan(weekPlan: DayPlan[]) {
+  const ingredients: Map<string, { name: string; amount: number; unit: string; category: string; fromMeals: string[] }> = new Map()
+
+  weekPlan.forEach((day) => {
+    if (day.meals.dinner) {
+      const recipe = day.meals.dinner
+      const recipeIngs = recipeIngredients[recipe.id] || []
+      
+      recipeIngs.forEach((ing) => {
+        const key = `${ing.name}-${ing.unit}`
+        if (ingredients.has(key)) {
+          const existing = ingredients.get(key)!
+          existing.amount += ing.amount
+          if (!existing.fromMeals.includes(recipe.name)) {
+            existing.fromMeals.push(recipe.name)
+          }
+        } else {
+          ingredients.set(key, {
+            name: ing.name,
+            amount: ing.amount,
+            unit: ing.unit,
+            category: ing.category,
+            fromMeals: [recipe.name],
+          })
+        }
+      })
+    }
+  })
+
+  // Group by category
+  const categories = {
+    groente: { id: 'groente', name: 'Groente & Fruit', icon: '🥬', items: [] as any[] },
+    vlees: { id: 'vlees', name: 'Vlees & Vis', icon: '🥩', items: [] as any[] },
+    zuivel: { id: 'zuivel', name: 'Zuivel & Eieren', icon: '🥛', items: [] as any[] },
+    overig: { id: 'overig', name: 'Overig', icon: '📦', items: [] as any[] },
+  }
+
+  let idCounter = 1
+  ingredients.forEach((ing) => {
+    const category = categories[ing.category as keyof typeof categories]
+    category.items.push({
+      id: String(idCounter++),
+      name: ing.name,
+      quantity: ing.amount,
+      unit: ing.unit,
+      checked: false,
+      fromMeal: ing.fromMeals.length === 1 ? ing.fromMeals[0] : `${ing.fromMeals.length} maaltijden`,
+    })
+  })
+
+  return Object.values(categories).filter((cat) => cat.items.length > 0)
+}

@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, RefreshCw } from 'lucide-react'
 import { ShoppingHeader } from './shopping-header'
 import { ShoppingCategory } from './shopping-category'
 import { EmptyState } from './empty-state'
-import { mockShoppingData, weekContext, type ShoppingCategory as CategoryType } from '@/lib/shopping-data'
+import { generateShoppingListFromWeekPlan, mockWeekPlan } from '@/lib/app-data'
+import { weekContext, type ShoppingCategory as CategoryType } from '@/lib/shopping-data'
 import { Button } from '@/components/ui/button'
 
 interface ShoppingListProps {
@@ -13,7 +14,14 @@ interface ShoppingListProps {
 }
 
 export function ShoppingList({ showEmptyState = false }: ShoppingListProps) {
-  const [categories, setCategories] = useState<CategoryType[]>(mockShoppingData)
+  // Generate shopping list from week plan
+  const [categories, setCategories] = useState<CategoryType[]>(() => 
+    generateShoppingListFromWeekPlan(mockWeekPlan)
+  )
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
+
+  // Calculate planned meals from week plan
+  const plannedMeals = mockWeekPlan.filter(day => day.meals.dinner).length
 
   const handleToggleItem = (itemId: string) => {
     setCategories((prev) =>
@@ -26,19 +34,26 @@ export function ShoppingList({ showEmptyState = false }: ShoppingListProps) {
     )
   }
 
+  const handleRegenerate = () => {
+    // In a real app, this would fetch the current week plan from API/state
+    const newCategories = generateShoppingListFromWeekPlan(mockWeekPlan)
+    setCategories(newCategories)
+    setLastUpdated(new Date())
+  }
+
   const totalItems = categories.reduce((acc, cat) => acc + cat.items.length, 0)
   const checkedItems = categories.reduce(
     (acc, cat) => acc + cat.items.filter((item) => item.checked).length,
     0
   )
 
-  if (showEmptyState) {
+  if (showEmptyState || plannedMeals === 0) {
     return (
       <div className="min-h-screen bg-background">
         <ShoppingHeader
           weekNumber={weekContext.weekNumber}
           dateRange={weekContext.dateRange}
-          plannedMeals={0}
+          plannedMeals={plannedMeals}
           progress={{ checked: 0, total: 0 }}
         />
         <EmptyState />
@@ -51,19 +66,34 @@ export function ShoppingList({ showEmptyState = false }: ShoppingListProps) {
       <ShoppingHeader
         weekNumber={weekContext.weekNumber}
         dateRange={weekContext.dateRange}
-        plannedMeals={weekContext.plannedMeals}
+        plannedMeals={plannedMeals}
         progress={{ checked: checkedItems, total: totalItems }}
       />
 
       <main className="max-w-2xl mx-auto px-4 py-6 pb-8">
-        {/* Add Item Button */}
-        <Button 
-          variant="secondary" 
-          className="w-full mb-6 h-12 rounded-xl gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <Plus className="h-4 w-4" />
-          Item toevoegen
-        </Button>
+        {/* Regenerate Button */}
+        <div className="flex gap-2 mb-6">
+          <Button 
+            variant="secondary" 
+            className="flex-1 h-12 rounded-xl gap-2"
+            onClick={handleRegenerate}
+          >
+            <RefreshCw className="h-4 w-4" />
+            Opnieuw genereren
+          </Button>
+          <Button 
+            variant="outline" 
+            className="h-12 rounded-xl gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Item toevoegen
+          </Button>
+        </div>
+
+        {/* Last Updated */}
+        <p className="text-xs text-muted-foreground mb-4 text-center">
+          Gebaseerd op {plannedMeals} geplande maaltijden • Bijgewerkt {lastUpdated.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+        </p>
 
         {categories.map((category) => (
           <ShoppingCategory
