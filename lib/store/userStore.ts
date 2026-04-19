@@ -7,133 +7,96 @@ import { persist } from "zustand/middleware";
 import { User } from "@/lib/types";
 
 interface UserState {
+  currentUser: User | null;
   users: User[];
-  currentUserId: string | null;
+  isLoading: boolean;
   
   // Actions
-  setUsers: (users: User[]) => void;
+  setCurrentUser: (user: User | null) => void;
+  addUser: (user: User) => void;
   updateUser: (userId: string, updates: Partial<User>) => void;
-  setCurrentUser: (userId: string) => void;
-  
-  // Getters
-  getCurrentUser: () => User | undefined;
   getPrimaryUser: () => User | undefined;
+  
+  // Hydration
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
 }
 
-// Default users voor Cas en partner
-const defaultUsers: User[] = [
-  {
-    id: "user_cas",
-    name: "Cas",
-    role: "secondary",
-    goals: {
-      weightCurrent: 103,
-      weightGoal: 88,
-      proteinTarget: 150,
-      trainingDaysPerWeek: 0,
-      stepsTarget: 7000
-    },
-    preferences: {
-      dietary: ["high-protein"],
-      dislikes: ["pizza"],
-      allergies: [],
-      maxPrepTime: {
-        breakfast: 5,
-        lunch: 10,
-        dinner: 15
-      },
-      budgetLevel: "moderate"
-    },
-    schedule: {
-      trainingDays: [],
-      workBusyDays: ["monday", "tuesday", "wednesday", "thursday", "friday"]
-    },
-    notifications: {
-      pushEnabled: true,
-      telegramEnabled: true,
-      telegramChatId: undefined,
-      reminders: {
-        breakfast: { enabled: true, time: "07:30" },
-        lunch: { enabled: true, time: "12:00" },
-        dinnerPrep: { enabled: true, time: "17:00" },
-        training: { enabled: false, time: "18:00" },
-        medication: { enabled: true, time: "08:00" }
-      }
-    },
-    createdAt: new Date(),
-    updatedAt: new Date()
+// Default user for initial state
+const createDefaultUser = (): User => ({
+  id: 'default-user',
+  name: 'Gebruiker',
+  role: 'primary',
+  goals: {
+    trainingDaysPerWeek: 3,
+    stepsTarget: 10000,
   },
-  {
-    id: "user_partner",
-    name: "Partner",
-    role: "primary",
-    goals: {
-      weightCurrent: undefined,
-      weightGoal: undefined,
-      calorieTarget: 1800,
-      proteinTarget: 120,
-      trainingDaysPerWeek: 2,
-      stepsTarget: 7000
+  preferences: {
+    dietary: [],
+    dislikes: [],
+    allergies: [],
+    maxPrepTime: {
+      breakfast: 15,
+      lunch: 20,
+      dinner: 45,
     },
-    preferences: {
-      dietary: ["high-protein"],
-      dislikes: [],
-      allergies: [],
-      maxPrepTime: {
-        breakfast: 5,
-        lunch: 10,
-        dinner: 15
-      },
-      budgetLevel: "moderate"
+    budgetLevel: 'moderate',
+  },
+  schedule: {
+    trainingDays: ['monday', 'wednesday', 'friday'],
+    workBusyDays: [],
+  },
+  notifications: {
+    pushEnabled: false,
+    telegramEnabled: false,
+    reminders: {
+      breakfast: { enabled: false, time: '08:00' },
+      lunch: { enabled: false, time: '12:00' },
+      dinnerPrep: { enabled: false, time: '17:00' },
+      training: { enabled: false, time: '18:00' },
+      medication: { enabled: false, time: '09:00' },
     },
-    schedule: {
-      trainingDays: ["tuesday", "thursday"],
-      workBusyDays: ["monday", "wednesday", "friday"]
-    },
-    notifications: {
-      pushEnabled: true,
-      telegramEnabled: false,
-      reminders: {
-        breakfast: { enabled: true, time: "07:30" },
-        lunch: { enabled: true, time: "12:00" },
-        dinnerPrep: { enabled: true, time: "17:00" },
-        training: { enabled: true, time: "18:00" },
-        medication: { enabled: true, time: "08:00" }
-      }
-    },
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-];
+  },
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
 
 export const useUserStore = create<UserState>()(
   persist(
     (set, get) => ({
-      users: defaultUsers,
-      currentUserId: "user_cas",
+      currentUser: null,
+      users: [],
+      isLoading: false,
+      _hasHydrated: false,
       
-      setUsers: (users) => set({ users }),
+      setCurrentUser: (user) => set({ currentUser: user }),
       
-      updateUser: (userId, updates) => {
-        const users = get().users.map(u => 
+      addUser: (user) => set((state) => ({ 
+        users: [...state.users, user],
+        currentUser: state.currentUser || user
+      })),
+      
+      updateUser: (userId, updates) => set((state) => ({
+        users: state.users.map(u => 
           u.id === userId ? { ...u, ...updates, updatedAt: new Date() } : u
-        );
-        set({ users });
-      },
-      
-      setCurrentUser: (userId) => set({ currentUserId: userId }),
-      
-      getCurrentUser: () => {
-        const { users, currentUserId } = get();
-        return users.find(u => u.id === currentUserId);
-      },
+        ),
+        currentUser: state.currentUser?.id === userId 
+          ? { ...state.currentUser, ...updates, updatedAt: new Date() }
+          : state.currentUser
+      })),
       
       getPrimaryUser: () => {
-        return get().users.find(u => u.role === "primary");
-      }
+        const state = get();
+        return state.users.find(u => u.role === 'primary') || state.currentUser || createDefaultUser();
+      },
+      
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
-      name: "rut-user-storage"
+      name: "rut-user-storage",
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

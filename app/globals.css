@@ -7,9 +7,36 @@
   --background-rgb: 248, 249, 250;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus visible styles for accessibility */
+:focus-visible {
+  outline: 2px solid #4A90A4;
+  outline-offset: 2px;
+}
+
+/* Remove default button styles */
+button {
+  font-family: inherit;
+}
+
+/* Touch action for swipeable elements */
+.swipeable {
+  touch-action: pan-y;
 }
 
 @layer utilities {
@@ -21,6 +48,10 @@ body {
     padding-bottom: env(safe-area-inset-bottom);
   }
   
+  .safe-area-pt {
+    padding-top: env(safe-area-inset-top);
+  }
+  
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -28,6 +59,28 @@ body {
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Animation utilities */
+  .animate-in {
+    animation-duration: 0.3s;
+    animation-fill-mode: both;
+  }
+
+  .slide-in-from-right {
+    animation-name: slide-in-from-right;
+  }
+
+  .slide-in-from-left {
+    animation-name: slide-in-from-left;
+  }
+
+  .slide-in-from-bottom {
+    animation-name: slide-in-from-bottom;
+  }
+
+  .fade-in {
+    animation-name: fade-in;
   }
 }
 
@@ -39,7 +92,7 @@ body {
   border-radius: 8px;
 }
 
-/* Animation utilities */
+/* Animation keyframes */
 @keyframes slide-in-from-right {
   from {
     transform: translateX(20px);
@@ -62,15 +115,62 @@ body {
   }
 }
 
-.animate-in {
-  animation-duration: 0.3s;
-  animation-fill-mode: both;
+@keyframes slide-in-from-bottom {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-.slide-in-from-right {
-  animation-name: slide-in-from-right;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.slide-in-from-left {
-  animation-name: slide-in-from-left;
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  .mobile-full-width {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white;
+  }
 }

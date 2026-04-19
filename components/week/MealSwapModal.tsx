@@ -1,119 +1,147 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Day, Meal } from "@/lib/types";
-import { useWeekStore } from "@/lib/store/weekStore";
-import { getMealAlternatives } from "@/lib/logic/weekGenerator";
-import { meals } from "@/lib/data/meals";
-import { X, Clock, Flame } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { Day, Meal } from '@/lib/types';
+import { ArrowLeftRight, X, Search } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { meals as defaultMeals } from '@/lib/data/meals';
+import { cn } from '@/lib/utils';
 
 interface MealSwapModalProps {
-  day: Day;
-  mealType: "breakfast" | "lunch" | "dinner";
   isOpen: boolean;
   onClose: () => void;
+  day: Day;
+  mealType: 'breakfast' | 'lunch' | 'dinner';
+  onSwap: (mealId: string) => void;
 }
 
-export function MealSwapModal({ day, mealType, isOpen, onClose }: MealSwapModalProps) {
-  const { swapMeal } = useWeekStore();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  
-  const currentMealId = day.meals[mealType].mealId;
-  const alternatives = getMealAlternatives(currentMealId, mealType, day.isTrainingDay);
-  
-  const handleSwap = (newMealId: string) => {
-    swapMeal(day.id, mealType, newMealId);
+export function MealSwapModal({ isOpen, onClose, day, mealType, onSwap }: MealSwapModalProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const currentMeal = day.meals[mealType];
+
+  // Filter meals by category
+  const availableMeals = defaultMeals.filter(
+    (meal) => 
+      meal.category === mealType &&
+      meal.id !== currentMeal.mealId &&
+      (searchQuery === '' || 
+        meal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        meal.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
+  );
+
+  const handleSwap = (mealId: string) => {
+    onSwap(mealId);
     onClose();
   };
-  
+
   if (!isOpen) return null;
-  
-  const labels = {
-    breakfast: "ontbijt",
-    lunch: "lunch",
-    dinner: "diner"
-  };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="swap-modal-title"
+    >
+      <div 
+        className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div>
-            <h2 className="text-lg font-bold text-[#2D3436]">
-              Wissel {labels[mealType]}
+            <h2 id="swap-modal-title" className="text-lg font-semibold text-[#2D3436]">
+              Maaltijd wisselen
             </h2>
             <p className="text-sm text-gray-500">
-              Kies een alternatief
+              {day.dayOfWeek === 'monday' && 'Maandag'}
+              {day.dayOfWeek === 'tuesday' && 'Dinsdag'}
+              {day.dayOfWeek === 'wednesday' && 'Woensdag'}
+              {day.dayOfWeek === 'thursday' && 'Donderdag'}
+              {day.dayOfWeek === 'friday' && 'Vrijdag'}
+              {day.dayOfWeek === 'saturday' && 'Zaterdag'}
+              {day.dayOfWeek === 'sunday' && 'Zondag'}
+              {' - '}
+              {mealType === 'breakfast' && 'Ontbijt'}
+              {mealType === 'lunch' && 'Lunch'}
+              {mealType === 'dinner' && 'Diner'}
             </p>
           </div>
-          <button 
+          <button
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            aria-label="Sluiten"
           >
-            <X size={20} />
+            <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
-        
-        {/* Alternatieven lijst */}
-        <div className="overflow-y-auto max-h-[60vh] p-4 space-y-3">
-          {alternatives.map((meal) => {
-            const isCurrent = meal.id === currentMealId;
-            
-            return (
-              <button
-                key={meal.id}
-                onClick={() => handleSwap(meal.id)}
-                disabled={isCurrent}
-                className={cn(
-                  "w-full text-left p-4 rounded-xl border transition-all",
-                  isCurrent 
-                    ? "border-[#7CB342] bg-[#7CB342]/5" 
-                    : "border-gray-200 hover:border-[#4A90A4] hover:bg-[#4A90A4]/5"
-                )}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="font-medium text-[#2D3436]">
-                      {meal.name}
-                      {isCurrent && (
-                        <span className="ml-2 text-xs text-[#7CB342]">(huidig)</span>
-                      )}
-                    </p>
-                    
-                    <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <Clock size={14} />
-                        {meal.prepTime + meal.cookTime} min
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Flame size={14} />
-                        {meal.nutrition.protein}g eiwit
-                      </span>
-                    </div>
-                    
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {meal.tags.slice(0, 3).map(tag => (
-                        <span 
-                          key={tag}
-                          className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
-                        >
-                          {tag === "high-protein" && "💪 Eiwit"}
-                          {tag === "quick" && "⚡ Snel"}
-                          {tag === "budget" && "💰 Budget"}
-                          {tag === "kid-friendly" && "👶 Kind"}
-                          {tag === "meal-prep" && "🔄 Prep"}
-                          {!["high-protein", "quick", "budget", "kid-friendly", "meal-prep"].includes(tag) && tag}
-                        </span>
-                      ))}
-                    </div>
+
+        {/* Current meal */}
+        <div className="p-4 bg-gray-50 border-b border-gray-200">
+          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Huidige maaltijd</p>
+          <p className="font-medium text-[#2D3436]">{currentMeal.mealName}</p>
+        </div>
+
+        {/* Search */}
+        <div className="p-4 border-b border-gray-200">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Zoek maaltijden..."
+              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A90A4]"
+            />
+          </div>
+        </div>
+
+        {/* Meal list */}
+        <div className="overflow-y-auto max-h-[300px] p-2">
+          {availableMeals.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              Geen andere maaltijden gevonden
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {availableMeals.map((meal) => (
+                <button
+                  key={meal.id}
+                  onClick={() => handleSwap(meal.id)}
+                  className="w-full p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                >
+                  <p className="font-medium text-[#2D3436]">{meal.name}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-gray-500">
+                      {meal.prepTime + meal.cookTime} min
+                    </span>
+                    <span className="text-xs text-gray-400">•</span>
+                    <span className="text-xs text-gray-500">
+                      {meal.tags.slice(0, 2).map(tag => {
+                        const tagLabels: Record<string, string> = {
+                          'high-protein': 'Eiwitrijk',
+                          'quick': 'Snel',
+                          'kid-friendly': 'Kids',
+                          'meal-prep': 'Prep',
+                          'vegetarian': 'Veggie',
+                          'budget': 'Budget',
+                        };
+                        return tagLabels[tag] || tag;
+                      }).join(', ')}
+                    </span>
                   </div>
-                </div>
-              </button>
-            );
-          })}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-gray-200">
+          <Button variant="outline" className="w-full" onClick={onClose}>
+            Annuleren
+          </Button>
         </div>
       </div>
     </div>

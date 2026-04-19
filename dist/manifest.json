@@ -1,7 +1,7 @@
 {
   "name": "Rut - Gezinsplanner",
   "short_name": "Rut",
-  "description": "Eenvoudige gezinsplanner voor vetverlies",
+  "description": "Eenvoudige gezinsplanner voor vetverlies - Autismevriendelijk",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F8F9FA",
@@ -9,6 +9,7 @@
   "orientation": "portrait",
   "scope": "/",
   "lang": "nl",
+  "categories": ["health", "lifestyle", "food"],
   "icons": [
     {
       "src": "/icon-192x192.png",
@@ -21,6 +22,29 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Vandaag",
+      "short_name": "Vandaag",
+      "description": "Bekijk je planning voor vandaag",
+      "url": "/",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Weekoverzicht",
+      "short_name": "Week",
+      "description": "Bekijk je weekplanning",
+      "url": "/week",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Boodschappen",
+      "short_name": "Boodschappen",
+      "description": "Bekijk je boodschappenlijst",
+      "url": "/shopping",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

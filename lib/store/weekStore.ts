@@ -4,9 +4,9 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Week, Day, MealInstance } from "@/lib/types";
+import { Week, Day, MealInstance, ShoppingList } from "@/lib/types";
 import { generateWeek, swapMeal } from "@/lib/logic/weekGenerator";
-import { generateShoppingList } from "@/lib/logic/shoppingList";
+import { generateShoppingList as generateShoppingListLogic } from "@/lib/logic/shoppingList";
 import { useUserStore } from "./userStore";
 
 interface WeekState {
@@ -23,7 +23,9 @@ interface WeekState {
   toggleTrainingComplete: (dayId: string) => void;
   toggleCheckin: (dayId: string, checkinType: keyof Day["checkins"]) => void;
   swapMeal: (dayId: string, mealType: "breakfast" | "lunch" | "dinner", newMealId: string) => void;
+  swapMealBetweenDays: (sourceDayId: string, sourceMealType: "breakfast" | "lunch" | "dinner", targetDayId: string, targetMealType: "breakfast" | "lunch" | "dinner") => void;
   generateShoppingList: () => void;
+  updateShoppingItem: (itemId: string, checked: boolean) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   
@@ -166,14 +168,82 @@ export const useWeekStore = create<WeekState>()(
         });
       },
       
+      swapMealBetweenDays: (sourceDayId: string, sourceMealType: "breakfast" | "lunch" | "dinner", targetDayId: string, targetMealType: "breakfast" | "lunch" | "dinner") => {
+        const week = get().currentWeek;
+        if (!week) return;
+        
+        const sourceDay = week.days.find(d => d.id === sourceDayId);
+        const targetDay = week.days.find(d => d.id === targetDayId);
+        if (!sourceDay || !targetDay) return;
+        
+        const sourceMeal = sourceDay.meals[sourceMealType];
+        const targetMeal = targetDay.meals[targetMealType];
+        
+        const updatedDays = week.days.map(d => {
+          if (d.id === sourceDayId) {
+            return {
+              ...d,
+              meals: {
+                ...d.meals,
+                [sourceMealType]: {
+                  ...targetMeal,
+                  completed: false,
+                  completedAt: undefined
+                }
+              }
+            };
+          }
+          if (d.id === targetDayId) {
+            return {
+              ...d,
+              meals: {
+                ...d.meals,
+                [targetMealType]: {
+                  ...sourceMeal,
+                  completed: false,
+                  completedAt: undefined
+                }
+              }
+            };
+          }
+          return d;
+        });
+        
+        set({
+          currentWeek: { ...week, days: updatedDays, updatedAt: new Date() }
+        });
+      },
+      
       generateShoppingList: () => {
         const week = get().currentWeek;
         if (!week) return;
         
-        const shoppingList = generateShoppingList(week);
+        const shoppingList = generateShoppingListLogic(week);
         
         set({
           currentWeek: { ...week, shoppingList, updatedAt: new Date() }
+        });
+      },
+
+      updateShoppingItem: (itemId: string, checked: boolean) => {
+        const week = get().currentWeek;
+        if (!week || !week.shoppingList) return;
+
+        const updatedShoppingList: ShoppingList = {
+          ...week.shoppingList,
+          byStore: week.shoppingList.byStore.map(store => ({
+            ...store,
+            categories: store.categories.map(cat => ({
+              ...cat,
+              items: cat.items.map(item =>
+                item.id === itemId ? { ...item, checked } : item
+              )
+            }))
+          }))
+        };
+
+        set({
+          currentWeek: { ...week, shoppingList: updatedShoppingList, updatedAt: new Date() }
         });
       },
       

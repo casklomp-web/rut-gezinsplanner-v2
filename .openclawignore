@@ -1,0 +1,39 @@
+# This file tells OpenClaw which files to ignore when working with this project
+
+# Dependencies
+node_modules/
+.next/
+dist/
+
+# Testing
+coverage/
+playwright-report/
+test-results/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Archives
+*.tar.gz
+*.zip

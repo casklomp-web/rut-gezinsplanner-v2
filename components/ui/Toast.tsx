@@ -1,150 +1,126 @@
-/**
- * Toast Notification System
- * Global toast notifications for Rut App
- */
-
 'use client';
 
-import { create } from 'zustand';
-import { useEffect, useState } from 'react';
-import { Check, AlertCircle, Info, X } from 'lucide-react';
+import { useState, useEffect, ReactNode } from 'react';
+import { X, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 interface Toast {
   id: string;
-  type: ToastType;
-  title: string;
-  message?: string;
+  message: string;
+  type: 'success' | 'error' | 'info' | 'warning';
   duration?: number;
 }
 
-interface ToastState {
+interface ToastContextType {
   toasts: Toast[];
-  addToast: (toast: Omit<Toast, 'id'>) => void;
+  addToast: (message: string, type?: Toast['type'], duration?: number) => void;
   removeToast: (id: string) => void;
-  clearAll: () => void;
 }
 
-export const useToastStore = create<ToastState>((set) => ({
-  toasts: [],
-  addToast: (toast) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    set((state) => ({
-      toasts: [...state.toasts, { ...toast, id }]
-    }));
-    
-    // Auto-remove after duration
+// Simple toast state management
+let toastListeners: ((toasts: Toast[]) => void)[] = [];
+let toasts: Toast[] = [];
+
+const notifyListeners = () => {
+  toastListeners.forEach(listener => listener([...toasts]));
+};
+
+export const addToast = (message: string, type: Toast['type'] = 'info', duration = 3000) => {
+  const id = Math.random().toString(36).substring(2, 9);
+  const newToast: Toast = { id, message, type, duration };
+  toasts = [...toasts, newToast];
+  notifyListeners();
+
+  if (duration > 0) {
     setTimeout(() => {
-      set((state) => ({
-        toasts: state.toasts.filter((t) => t.id !== id)
-      }));
-    }, toast.duration || 4000);
-  },
-  removeToast: (id) => {
-    set((state) => ({
-      toasts: state.toasts.filter((t) => t.id !== id)
-    }));
-  },
-  clearAll: () => set({ toasts: [] })
-}));
-
-// Helper functions
-export const toast = {
-  success: (title: string, message?: string) => {
-    useToastStore.getState().addToast({ type: 'success', title, message });
-  },
-  error: (title: string, message?: string) => {
-    useToastStore.getState().addToast({ type: 'error', title, message });
-  },
-  info: (title: string, message?: string) => {
-    useToastStore.getState().addToast({ type: 'info', title, message });
-  },
-  warning: (title: string, message?: string) => {
-    useToastStore.getState().addToast({ type: 'warning', title, message });
+      removeToast(id);
+    }, duration);
   }
+
+  return id;
 };
 
-// Toast icon mapping
-const toastIcons = {
-  success: Check,
-  error: AlertCircle,
-  info: Info,
-  warning: AlertCircle
+export const removeToast = (id: string) => {
+  toasts = toasts.filter(t => t.id !== id);
+  notifyListeners();
 };
 
-const toastStyles = {
-  success: 'bg-green-50 border-green-200 text-green-800',
-  error: 'bg-red-50 border-red-200 text-red-800',
-  info: 'bg-blue-50 border-blue-200 text-blue-800',
-  warning: 'bg-yellow-50 border-yellow-200 text-yellow-800'
+export const toast = {
+  success: (message: string, options?: { duration?: number }) => 
+    addToast(message, 'success', options?.duration),
+  error: (message: string, options?: { duration?: number }) => 
+    addToast(message, 'error', options?.duration),
+  info: (message: string, options?: { duration?: number }) => 
+    addToast(message, 'info', options?.duration),
+  warning: (message: string, options?: { duration?: number }) => 
+    addToast(message, 'warning', options?.duration),
 };
 
-const iconStyles = {
-  success: 'text-green-500',
-  error: 'text-red-500',
-  info: 'text-blue-500',
-  warning: 'text-yellow-500'
-};
+function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
+  const icons = {
+    success: <CheckCircle className="w-5 h-5 text-green-500" />,
+    error: <AlertTriangle className="w-5 h-5 text-red-500" />,
+    info: <Info className="w-5 h-5 text-blue-500" />,
+    warning: <AlertTriangle className="w-5 h-5 text-yellow-500" />,
+  };
 
-// Individual Toast component
-function ToastItem({ toast }: { toast: Toast }) {
-  const { removeToast } = useToastStore();
-  const Icon = toastIcons[toast.type];
-  
+  const bgColors = {
+    success: 'bg-green-50 border-green-200',
+    error: 'bg-red-50 border-red-200',
+    info: 'bg-blue-50 border-blue-200',
+    warning: 'bg-yellow-50 border-yellow-200',
+  };
+
   return (
     <div
       className={cn(
-        'flex items-start gap-3 p-4 rounded-xl border shadow-lg min-w-[300px] max-w-md',
-        'animate-in slide-in-from-right-full duration-300',
-        toastStyles[toast.type]
+        "flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg min-w-[300px] max-w-md animate-in slide-in-from-right",
+        bgColors[toast.type]
       )}
       role="alert"
+      aria-live="polite"
     >
-      <Icon className={cn('w-5 h-5 mt-0.5 flex-shrink-0', iconStyles[toast.type])} />
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm">{toast.title}</p>
-        {toast.message && (
-          <p className="text-sm opacity-80 mt-1">{toast.message}</p>
-        )}
-      </div>
+      {icons[toast.type]}
+      <p className="flex-1 text-sm text-gray-800 whitespace-pre-line">{toast.message}</p>
       <button
-        onClick={() => removeToast(toast.id)}
-        className="flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+        onClick={onClose}
+        className="p-1 hover:bg-black/5 rounded-full transition-colors"
+        aria-label="Sluit melding"
       >
-        <X className="w-4 h-4" />
+        <X className="w-4 h-4 text-gray-500" />
       </button>
     </div>
   );
 }
 
-// Toast container component
-export function ToastContainer() {
-  const { toasts } = useToastStore();
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  
-  if (!mounted || toasts.length === 0) return null;
-  
-  return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
-      {toasts.map((toast) => (
-        <ToastItem key={toast.id} toast={toast} />
-      ))}
-    </div>
-  );
-}
+export function ToastProvider({ children }: { children: ReactNode }) {
+  const [localToasts, setLocalToasts] = useState<Toast[]>([]);
 
-// Toast provider to wrap app
-export function ToastProvider({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    const listener = (newToasts: Toast[]) => setLocalToasts(newToasts);
+    toastListeners.push(listener);
+    return () => {
+      toastListeners = toastListeners.filter(l => l !== listener);
+    };
+  }, []);
+
   return (
     <>
       {children}
-      <ToastContainer />
+      {/* Toast container */}
+      <div 
+        className="fixed top-4 right-4 z-50 flex flex-col gap-2"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {localToasts.map(t => (
+          <ToastItem
+            key={t.id}
+            toast={t}
+            onClose={() => removeToast(t.id)}
+          />
+        ))}
+      </div>
     </>
   );
 }

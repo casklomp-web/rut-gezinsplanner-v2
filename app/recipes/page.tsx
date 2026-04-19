@@ -1,13 +1,7 @@
-/**
- * Recipes Page
- * Browse, search, and manage recipes
- */
-
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Search, Plus, Heart, Clock, ChefHat, Edit2, Trash2, X } from 'lucide-react';
+import { Search, Plus, Heart, Clock, ChefHat, Edit2, Trash2, X, FileDown } from 'lucide-react';
 import { meals as defaultMeals } from '@/lib/data/meals';
 import { Meal, MealCategory, MealTag } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
@@ -15,8 +9,10 @@ import { RecipeModal } from '@/components/recipes/RecipeModal';
 import { DeleteConfirmModal } from '@/components/ui/DeleteConfirmModal';
 import { EmptyState } from '@/components/ui/ErrorBoundary';
 import { RecipesListSkeleton } from '@/components/ui/Skeleton';
+import { useInfiniteScroll, InfiniteScrollLoader } from '@/components/ui/InfiniteScroll';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/Toast';
+import { OptimizedImage } from '@/components/ui/Animations';
 
 const categoryFilters: { value: MealCategory | 'all'; label: string }[] = [
   { value: 'all', label: 'Alles' },
@@ -36,21 +32,12 @@ const tagFilters: { value: MealTag; label: string }[] = [
 ];
 
 function RecipesPageContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  
   const [recipes, setRecipes] = useState<Meal[]>(defaultMeals);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
-  const [selectedCategory, setSelectedCategory] = useState<MealCategory | 'all'>(
-    (searchParams.get('category') as MealCategory | 'all') || 'all'
-  );
-  const [selectedTags, setSelectedTags] = useState<MealTag[]>(
-    searchParams.get('tags')?.split(',').filter(Boolean) as MealTag[] || []
-  );
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(
-    searchParams.get('favorites') === 'true'
-  );
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<MealCategory | 'all'>('all');
+  const [selectedTags, setSelectedTags] = useState<MealTag[]>([]);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   
   // Modal states
@@ -67,17 +54,6 @@ function RecipesPageContent() {
     }
     setIsLoading(false);
   }, []);
-  
-  // Update URL when filters change
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (searchQuery) params.set('q', searchQuery);
-    if (selectedCategory !== 'all') params.set('category', selectedCategory);
-    if (selectedTags.length > 0) params.set('tags', selectedTags.join(','));
-    if (showFavoritesOnly) params.set('favorites', 'true');
-    
-    router.replace(`/recipes?${params.toString()}`, { scroll: false });
-  }, [searchQuery, selectedCategory, selectedTags, showFavoritesOnly, router]);
   
   // Filter recipes
   const filteredRecipes = recipes.filter(recipe => {
@@ -110,6 +86,12 @@ function RecipesPageContent() {
     }
     
     return true;
+  });
+
+  // Infinite scroll
+  const { displayedItems, loaderRef, hasMore, isLoading: isLoadingMore } = useInfiniteScroll({
+    items: filteredRecipes,
+    pageSize: 10,
   });
   
   const handleSearch = (query: string) => {
@@ -184,6 +166,20 @@ function RecipesPageContent() {
       r.id === recipeId ? { ...r, isFavorite: !r.isFavorite } : r
     ));
   };
+
+  const handleExportRecipes = () => {
+    const dataStr = JSON.stringify(recipes, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `rut-recepten-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success('Recepten geëxporteerd');
+  };
   
   if (isLoading) {
     return (
@@ -202,15 +198,24 @@ function RecipesPageContent() {
         <h1 className="text-2xl font-bold text-[#2D3436]">
           Recepten
         </h1>
-        <button
-          onClick={() => {
-            setEditingRecipe(null);
-            setIsModalOpen(true);
-          }}
-          className="w-10 h-10 bg-[#4A90A4] text-white rounded-full flex items-center justify-center hover:bg-[#3a7a8c] transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportRecipes}
+            className="w-10 h-10 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+            title="Exporteer recepten"
+          >
+            <FileDown className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => {
+              setEditingRecipe(null);
+              setIsModalOpen(true);
+            }}
+            className="w-10 h-10 bg-[#4A90A4] text-white rounded-full flex items-center justify-center hover:bg-[#3a7a8c] transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        </div>
       </div>
       
       {/* Search */}
@@ -222,11 +227,13 @@ function RecipesPageContent() {
           onChange={(e) => handleSearch(e.target.value)}
           placeholder="Zoek recepten..."
           className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4A90A4]"
+          aria-label="Zoek recepten"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full"
+            aria-label="Wis zoekopdracht"
           >
             <X className="w-4 h-4 text-gray-400" />
           </button>
@@ -252,11 +259,13 @@ function RecipesPageContent() {
       )}
       
       {/* Category filters */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide" role="tablist" aria-label="Filter op categorie">
         {categoryFilters.map(cat => (
           <button
             key={cat.value}
             onClick={() => setSelectedCategory(cat.value)}
+            role="tab"
+            aria-selected={selectedCategory === cat.value}
             className={cn(
               'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors',
               selectedCategory === cat.value
@@ -270,9 +279,10 @@ function RecipesPageContent() {
       </div>
       
       {/* Tag filters */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide" role="group" aria-label="Filter op tags">
         <button
           onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+          aria-pressed={showFavoritesOnly}
           className={cn(
             'px-3 py-1.5 rounded-full text-sm flex items-center gap-1 whitespace-nowrap transition-colors',
             showFavoritesOnly
@@ -280,13 +290,14 @@ function RecipesPageContent() {
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           )}
         >
-          <Heart className={cn('w-3.5 h-3.5', showFavoritesOnly && 'fill-current')} />
+          <Heart className={cn('w-3.5 h-3.5', showFavoritesOnly && 'fill-current')} aria-hidden="true" />
           Favorieten
         </button>
         {tagFilters.map(tag => (
           <button
             key={tag.value}
             onClick={() => toggleTag(tag.value)}
+            aria-pressed={selectedTags.includes(tag.value)}
             className={cn(
               'px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors',
               selectedTags.includes(tag.value)
@@ -338,16 +349,26 @@ function RecipesPageContent() {
           }
         />
       ) : (
-        <div className="space-y-3">
-          {filteredRecipes.map(recipe => (
-            <div
+        <div className="space-y-3" role="list" aria-label="Recepten">
+          {displayedItems.map(recipe => (
+            <article
               key={recipe.id}
+              role="listitem"
               className="bg-white rounded-xl p-4 border border-gray-200 hover:border-[#4A90A4] transition-colors group"
             >
               <div className="flex items-start gap-4">
-                {/* Image placeholder */}
-                <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <ChefHat className="w-8 h-8 text-gray-400" />
+                {/* Image */}
+                <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {recipe.imageUrl ? (
+                    <OptimizedImage
+                      src={recipe.imageUrl}
+                      alt={recipe.name}
+                      className="w-full h-full object-cover"
+                      containerClassName="w-full h-full"
+                    />
+                  ) : (
+                    <ChefHat className="w-8 h-8 text-gray-400" aria-hidden="true" />
+                  )}
                 </div>
                 
                 <div className="flex-1 min-w-0">
@@ -359,21 +380,23 @@ function RecipesPageContent() {
                       <button
                         onClick={() => handleEditRecipe(recipe)}
                         className="p-1.5 text-gray-400 hover:text-[#4A90A4] hover:bg-[#4A90A4]/10 rounded-lg"
+                        aria-label={`Bewerk ${recipe.name}`}
                       >
-                        <Edit2 className="w-4 h-4" />
+                        <Edit2 className="w-4 h-4" aria-hidden="true" />
                       </button>
                       <button
                         onClick={() => handleDeleteClick(recipe)}
                         className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
+                        aria-label={`Verwijder ${recipe.name}`}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" aria-hidden="true" />
                       </button>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
                     <span className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
+                      <Clock className="w-3.5 h-3.5" aria-hidden="true" />
                       {recipe.prepTime + recipe.cookTime} min
                     </span>
                     <span className="capitalize">
@@ -411,6 +434,8 @@ function RecipesPageContent() {
                 <button
                   onClick={() => toggleFavorite(recipe.id)}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  aria-label={recipe.isFavorite ? 'Verwijder van favorieten' : 'Voeg toe aan favorieten'}
+                  aria-pressed={recipe.isFavorite}
                 >
                   <Heart
                     className={cn(
@@ -419,11 +444,17 @@ function RecipesPageContent() {
                         ? 'fill-red-500 text-red-500'
                         : 'text-gray-400'
                     )}
+                    aria-hidden="true"
                   />
                 </button>
               </div>
-            </div>
+            </article>
           ))}
+          
+          {/* Infinite scroll loader */}
+          <div ref={loaderRef}>
+            <InfiniteScrollLoader isLoading={isLoadingMore} hasMore={hasMore} />
+          </div>
         </div>
       )}
       

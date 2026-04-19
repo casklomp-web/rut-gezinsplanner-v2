@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - Rut</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #F8F9FA;
+      color: #2D3436;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+    .icon {
+      width: 80px;
+      height: 80px;
+      background: #4A90A4;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      font-size: 40px;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+    p {
+      color: #636E72;
+      margin-bottom: 24px;
+      max-width: 300px;
+      line-height: 1.5;
+    }
+    .button {
+      background: #4A90A4;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .button:hover {
+      background: #3a7a8c;
+    }
+    .status {
+      margin-top: 16px;
+      font-size: 14px;
+      color: #636E72;
+    }
+    .status.online {
+      color: #7CB342;
+    }
+  </style>
+</head>
+<body>
+  <div class="icon">📴</div>
+  <h1>Je bent offline</h1>
+  <p>Geen zorgen! Je kunt de app nog steeds gebruiken. Je wijzigingen worden automatisch gesynchroniseerd wanneer je weer online bent.</p>
+  <button class="button" onclick="window.location.reload()">Opnieuw proberen</button>
+  <div class="status" id="status"></div>
+
+  <script>
+    // Check online status
+    function updateStatus() {
+      const statusEl = document.getElementById('status');
+      if (navigator.onLine) {
+        statusEl.textContent = '✓ Je bent weer online!';
+        statusEl.className = 'status online';
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        statusEl.textContent = 'Wachten op verbinding...';
+        statusEl.className = 'status';
+      }
+    }
+
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+    updateStatus();
+  </script>
+</body>
+</html>

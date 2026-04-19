@@ -16,11 +16,13 @@ export type DayOfWeek =
   | "saturday" 
   | "sunday";
 
-export type MealCategory = 
-  | "breakfast" 
-  | "lunch" 
-  | "dinner" 
+export type MealCategory =
+  | "breakfast"
+  | "lunch"
+  | "dinner"
   | "snack";
+
+export type MealType = "breakfast" | "lunch" | "dinner";
 
 export type MealTag = 
   | "high-protein" 
@@ -137,6 +139,8 @@ export interface Meal {
   keepsForDays: number;
   shoppingCategory: StoreCategory;
   estimatedCost: number;
+  imageUrl?: string;
+  isCustom?: boolean;
 }
 
 export interface MealVariant {
