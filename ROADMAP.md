@@ -1,53 +1,149 @@
-# Rut - Roadmap
+# Rut - Roadmap & Prioriteiten
 
-## v0.1 - Slimme Weekplanner (HUIDIG)
-**Doel**: Basis werkt, voelt professioneel aan
+**Laatst bijgewerkt: 2026-04-19**
 
-**Must-have**:
-- [x] Weekplanner met ma-zo overzicht
-- [x] Recepten toewijzen aan dagen (ontbijt/lunch/diner)
-- [x] Boodschappenlijst genereren uit geplande maaltijden
-- [x] Boodschappen gegroepeerd per categorie
-- [x] 15+ recepten in database met ingrediënten
-- [x] Responsive layout (mobile + desktop)
-- [ ] Premium UI design (IN PROGRESS - wacht op v0.dev input van Cas)
+---
 
-**Nice-to-have (v0.1)**:
-- [ ] Recept favorieten markeren
-- [ ] Snelle filters (< 20 min, vegetarisch)
-- [ ] "Focus van de week" keuze
+## Prioriteit Legenda
 
-## v0.2 - Health Planner
-**Doel**: Persoonlijke profielen + kcal tracking
+- **P0** = Must-have voor MVP. Zonder dit werkt het product niet.
+- **P1** = Should-have. Belangrijk voor goede UX, maar MVP kan zonder.
+- **P2** = Nice-to-have. Komt pas na MVP lancering.
 
-**Features**:
-- Gezinsleden profielen (leeftijd, gewicht, lengte, doel)
-- Automatische kcal-berekening per persoon (Harris-Benedict)
-- Per maaltijd: totale kcal + macro's voor het gezin
-- "Vandaag nog X kcal over" indicator per persoon
-- Slimme suggesties: "Dit recept past bij jouw doel"
+---
 
-## v1.0 - Gezins Coach
-**Doel**: Integratie + coaching
+## v0.2 - Family Task Board MVP (HUIDIGE FOCUS)
 
-**Features**:
-- Agenda-integratie (sport, afspraken)
-- Weekplanning reageert op drukke dagen (snelle maaltijden)
-- Weekelijkse voortgangsrapporten per gezinslid
-- Coaching-achtige features: "Goed bezig! Deze week 3x sport gepland"
-- Challenges: "Familie challenge: 5 dagen gezond eten"
+**Doel:** Onderscheidende MVP die "schuiven met taken" demonstreert
 
-## Regels & Afspraken
-1. **NOOIT** v0.2 starten voordat v0.1 UI echt goed is
-2. **ALTIJD** design input vragen voor UI wijzigingen (v0.dev)
-3. Migrations alleen via afgesproken workflow (niet handmatig in production)
-4. Documenteer belangrijke beslissingen in PROJECT_STATUS.md
-5. "Klaar" = functioneel + professionele UI + getest
+### P0 - Must Have
 
-## Onderscheidende Waarde
-| App | Wat ze doen | Wat ze missen |
-|-----|-------------|---------------|
-| **Hive** | Familie-agenda, taken | Geen voeding, geen maaltijdplanning |
-| **Vytal** | Calorie-tracking, macro's | Alleen individueel, geen gezinscontext |
-| **HelloFresh** | Recepten + boodschappen | Geen planning, geen persoonlijke doelen |
-| **Rut** | **Weekplanning + voeding + gezinscontext** | **De sweet spot** |
+| Feature | User Story | Status |
+|---------|------------|--------|
+| **Family Task Board UI** | Als ouder wil ik een visueel bord zien met alle taken per gezinslid | 🚧 In ontwikkeling |
+| **Taken aanmaken** | Als ouder wil ik taken aanmaken zoals "afval buiten" of "keuken opruimen" | 🚧 In ontwikkeling |
+| **Taken toewijzen** | Als ouder wil ik taken toewijzen aan specifieke gezinsleden | 🚧 In ontwikkeling |
+| **Drag & drop verplaatsen** | Als ouder wil ik taken verslepen naar andere dagen of gezinsleden | 🚧 In ontwikkeling |
+| **Terugkerende taken** | Als ouder wil ik taken instellen als dagelijks/wekelijks zodat ze automatisch terugkomen | 🚧 In ontwikkeling |
+| **Weekplanner + Food** | Als gezin wil ik maaltijden plannen en de boodschappenlijst automatisch genereren | ✅ Bestaand uit v0.1 |
+| **Responsive design** | Als gebruiker wil ik Rut gebruiken op zowel telefoon als iPad | ✅ Bestaand |
+
+### P1 - Should Have (Post-MVP)
+
+| Feature | User Story | Status |
+|---------|------------|--------|
+| **Taak templates** | Als ouder wil ik templates gebruiken zoals "Ochtendroutine" of "Weekend schoonmaak" | ❌ Niet gestart |
+| **Taak geschiedenis** | Als ouder wil ik zien wie welke taken wanneer heeft gedaan | ❌ Niet gestart |
+| **Swap voorstellen** | Als ouder wil ik een taak "swappen" met iemand anders met hun toestemming | ❌ Niet gestart |
+| **Notificaties** | Als gezinslid wil ik herinneringen krijgen voor mijn taken | ❌ Niet gestart |
+| **Zoeken & filteren** | Als ouder wil ik taken zoeken op naam, persoon, of datum | ❌ Niet gestart |
+
+### P2 - Nice to Have (Later)
+
+| Feature | User Story | Status |
+|---------|------------|--------|
+| **3D UI op iPad** | Als gebruiker wil ik een speels 3D bord met cubes/tiles voor taken | ❌ Niet gestart |
+| **Google/Apple agenda sync** | Als gebruiker wil ik Rut koppelen aan mijn bestaande agenda | ❌ Niet gestart |
+| **Voice commands** | Als gebruiker wil ik taken toevoegen via spraak | ❌ Niet gestart |
+| **AI suggesties** | Als ouder wil ik dat Rut taken voorstelt op basis van onze patronen | ❌ Niet gestart |
+| **Kostentracking** | Als ouder wil ik simpele kosten noteren per taak (niet als volledig budgetproduct) | ❌ Concept alleen |
+
+---
+
+## v0.3 - Insights & Health (NA MVP)
+
+**Doel:** Gezinnen inzicht geven in hun taakverdeling
+
+### P1 Features
+
+| Feature | User Story |
+|---------|------------|
+| **Tijdsbesteding dashboard** | Als ouder wil ik zien hoeveel tijd elk gezinslid besteedt aan taken |
+| **Eerlijke verdeling meting** | Als ouder wil ik een "eerlijkheidsmeter" zien voor taakverdeling |
+| **Trends & patronen** | Als ouder wil ik zien welke dagen het drukst zijn |
+
+### P2 Features
+
+| Feature | User Story |
+|---------|------------|
+| **Health tracking** | Als gebruiker wil ik calorieën en macro's tracken per maaltijd |
+| **Persoonlijke doelen** | Als gebruiker wil ik persoonlijke health doelen instellen |
+
+---
+
+## v1.0 - Smart Family Assistant (TOEKOMST)
+
+**Doel:** Rut wordt een proactieve assistant
+
+### P2 Features
+
+| Feature | User Story |
+|---------|------------|
+| **Proactieve suggesties** | Als ouder wil ik dat Rut taken voorstelt op basis van onze historie |
+| **Automatische verdeling** | Als ouder wil ik dat Rut taken automatisch eerlijk verdeelt |
+| **Voice-first interface** | Als gebruiker wil ik Rut volledig bedienen via spraak |
+| **3D immersive UI** | Als gebruiker wil ik een volledig 3D bord op iPad |
+
+---
+
+## Technische Roadmap
+
+### Database (P0)
+- [ ] `tasks` tabel met recurrence support
+- [ ] `household_members` tabel
+- [ ] `task_assignments` tabel
+- [ ] `task_templates` tabel (voor later)
+
+### API (P0)
+- [ ] CRUD endpoints voor taken
+- [ ] Recurrence logiek (dagelijks/wekelijks)
+- [ ] Drag & drop sync
+
+### Frontend (P0)
+- [ ] Family Task Board component
+- [ ] Drag & drop met @dnd-kit
+- [ ] Responsive lanes layout
+- [ ] Mock data → Supabase integratie
+
+### Integraties (P1/P2)
+- [ ] Google Calendar (P1)
+- [ ] Apple Calendar (P2)
+- [ ] Push notificaties (P1)
+
+---
+
+## Release Criteria
+
+### v0.2 MVP is "klaar" als:
+1. ✅ Family Task Board werkt op mobile én iPad
+2. ✅ Gezin kan taken aanmaken, toewijzen, verschuiven
+3. ✅ Terugkerende taken werken automatisch
+4. ✅ Weekplanner + food blijft werken
+5. ✅ Build is succesvol en gedeployed
+6. ✅ Geen kritieke bugs
+
+### v0.2 MVP is NIET "klaar" als:
+- ❌ Alleen mock data (moet echt opslaan)
+- ❌ Drag & drop is buggy
+- ❌ Werkt niet op mobile
+- ❌ Geen terugkerende taken
+
+---
+
+## Huidige Focus
+
+**Wat we NU bouwen:**
+1. Family Task Board UI (lanes, kaarten, drag & drop)
+2. Taken CRUD (aanmaken, bewerken, verwijderen)
+3. Recurrence (dagelijks/wekelijks)
+4. Database schema voor taken
+
+**Wat we expres NIET nu doen:**
+- Geen 3D UI (te vroeg)
+- Geen agenda sync (niet onderscheidend)
+- Geen health tracking (scope creep)
+- Geen kostentracking (niet kern)
+
+---
+
+*Roadmap wordt wekelijks bijgewerkt na stand-up.*

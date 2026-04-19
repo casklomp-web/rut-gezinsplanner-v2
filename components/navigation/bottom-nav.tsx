@@ -3,10 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { Calendar, ShoppingCart, BookOpen, User } from 'lucide-react'
+import { Calendar, ShoppingCart, BookOpen, User, LayoutGrid } from 'lucide-react'
 
 const navItems = [
   { href: '/week', label: 'Week', icon: Calendar },
+  { href: '/taken', label: 'Taken', icon: LayoutGrid },
   { href: '/boodschappen', label: 'Lijst', icon: ShoppingCart },
   { href: '/recepten', label: 'Recepten', icon: BookOpen },
   { href: '/profiel', label: 'Profiel', icon: User },
