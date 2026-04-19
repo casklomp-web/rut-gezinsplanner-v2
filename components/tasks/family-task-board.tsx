@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DndContext, DragEndEvent, DragOverlay, useDraggable, useDroppable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { Task, HouseholdMember, mockTasks, mockHouseholdMembers, getWeekDates, dayNames, fullDayNames } from '@/lib/task-domain'
+import { Task, HouseholdMember, mockHouseholdMembers, mockTasks, getWeekDates, dayNames, fullDayNames } from '@/lib/task-domain'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, MoreHorizontal, CheckCircle2, Circle, Repeat } from 'lucide-react'
@@ -79,7 +79,7 @@ function TaskLane({ member, tasks, date }: TaskLaneProps) {
     data: { date, member },
   })
 
-  const dayTasks = tasks.filter(task => task.dueDate === date)
+  const dayTasks = tasks.filter(task => task.due_date === date)
 
   return (
     <div
@@ -116,10 +116,10 @@ function MemberHeader({ member }: MemberHeaderProps) {
         className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
         style={{ backgroundColor: member.color }}
       >
-        {member.displayName.charAt(0)}
+        {member.display_name.charAt(0)}
       </div>
       <div>
-        <p className="font-semibold">{member.displayName}</p>
+        <p className="font-semibold">{member.display_name}</p>
         <p className="text-xs text-muted-foreground">
           {member.role === 'admin' ? 'Beheerder' : 'Lid'}
         </p>
@@ -130,11 +130,54 @@ function MemberHeader({ member }: MemberHeaderProps) {
 
 // Main Task Board Component
 export function FamilyTaskBoard() {
-  const [tasks, setTasks] = useState<Task[]>(mockTasks)
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [members, setMembers] = useState<HouseholdMember[]>(mockHouseholdMembers)
   const [activeTask, setActiveTask] = useState<Task | null>(null)
+  const [loading, setLoading] = useState(true)
   const weekDates = getWeekDates()
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  // Load tasks from Supabase
+  useEffect(() => {
+    async function loadData() {
+      try {
+        // Check if Supabase is configured
+        if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+          console.log('Supabase not configured, using mock data')
+          setTasks(mockTasks)
+          setLoading(false)
+          return
+        }
+        
+        // Dynamic import to avoid build-time errors
+        const { getTasks, getHouseholdMembers } = await import('@/lib/task-api')
+        
+        // TODO: Get actual household ID from auth context
+        const householdId = 'household-1'
+        const startDate = weekDates[0]
+        const endDate = weekDates[6]
+        
+        const [loadedTasks, loadedMembers] = await Promise.all([
+          getTasks(householdId, startDate, endDate),
+          getHouseholdMembers(householdId),
+        ])
+        
+        setTasks(loadedTasks)
+        if (loadedMembers.length > 0) {
+          setMembers(loadedMembers)
+        }
+      } catch (error) {
+        console.error('Failed to load tasks:', error)
+        // Fall back to mock data
+        setTasks(mockTasks)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadData()
+  }, [])
+
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
 
     if (!over) return
@@ -143,13 +186,32 @@ export function FamilyTaskBoard() {
     const dropZone = over.id as string
     const [date, memberId] = dropZone.split('-')
 
-    // Update task
+    // Optimistically update UI
     setTasks(prev =>
       prev.map(task =>
         task.id === taskId
-          ? { ...task, dueDate: date, assigneeId: memberId }
+          ? { ...task, due_date: date, assignee_id: memberId }
           : task
       )
+    )
+
+    // Update in database (only if Supabase is configured)
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      try {
+        const { updateTask } = await import('@/lib/task-api')
+        await updateTask(taskId, { due_date: date, assignee_id: memberId })
+      } catch (error) {
+        console.error('Failed to update task:', error)
+        // TODO: Revert optimistic update on error
+      }
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
     )
   }
 
@@ -192,7 +254,7 @@ export function FamilyTaskBoard() {
 
             {/* Member Lanes */}
             <div className="space-y-4">
-              {mockHouseholdMembers.map(member => (
+              {members.map(member => (
                 <div
                   key={member.id}
                   className="grid grid-cols-[200px_1fr] gap-4 items-start"
@@ -218,7 +280,7 @@ export function FamilyTaskBoard() {
           {activeTask && (
             <TaskCard
               task={activeTask}
-              member={mockHouseholdMembers.find(m => m.id === activeTask.assigneeId)!}
+              member={members.find(m => m.id === activeTask.assignee_id)!}
               isOverlay
             />
           )}

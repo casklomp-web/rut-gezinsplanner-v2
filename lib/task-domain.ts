@@ -4,19 +4,19 @@
 export interface Household {
   id: string
   name: string
-  createdBy: string
-  createdAt: string
+  created_by: string
+  created_at: string
 }
 
 export interface HouseholdMember {
   id: string
-  householdId: string
-  userId: string
-  displayName: string
+  household_id: string
+  user_id: string
+  display_name: string
   role: 'admin' | 'member'
   color: string // For UI lane coloring
   avatar?: string
-  createdAt: string
+  created_at: string
 }
 
 export type TaskStatus = 'todo' | 'in_progress' | 'done'
@@ -25,32 +25,32 @@ export type MealType = 'breakfast' | 'lunch' | 'dinner'
 
 export interface Task {
   id: string
-  householdId: string
-  createdBy: string
-  assigneeId: string
+  household_id: string
+  created_by: string
+  assignee_id: string
   title: string
   description?: string
-  dueDate: string // ISO date string
+  due_date: string // ISO date string
   status: TaskStatus
   recurrence: TaskRecurrence
-  recurrenceEndDate?: string
+  recurrence_end_date?: string
   
   // Integration with food
-  isMeal: boolean
-  mealType?: MealType
-  recipeId?: string // Link to recipes table
+  is_meal: boolean
+  meal_type?: MealType
+  recipe_id?: string // Link to recipes table
   
   // Metadata
-  createdAt: string
-  updatedAt: string
+  created_at: string
+  updated_at: string
 }
 
 export interface TaskCompletion {
   id: string
-  taskId: string
-  completedBy: string
-  completedAt: string
-  weekNumber: number
+  task_id: string
+  completed_by: string
+  completed_at: string
+  week_number: number
 }
 
 // For the task board view
@@ -69,131 +69,131 @@ export interface DayColumn {
 export const mockHouseholdMembers: HouseholdMember[] = [
   {
     id: 'member-1',
-    householdId: 'household-1',
-    userId: 'user-1',
-    displayName: 'Papa',
+    household_id: 'household-1',
+    user_id: 'user-1',
+    display_name: 'Papa',
     role: 'admin',
     color: '#3b82f6', // blue
-    createdAt: '2025-01-01',
+    created_at: '2025-01-01',
   },
   {
     id: 'member-2',
-    householdId: 'household-1',
-    userId: 'user-2',
-    displayName: 'Mama',
+    household_id: 'household-1',
+    user_id: 'user-2',
+    display_name: 'Mama',
     role: 'admin',
     color: '#ec4899', // pink
-    createdAt: '2025-01-01',
+    created_at: '2025-01-01',
   },
   {
     id: 'member-3',
-    householdId: 'household-1',
-    userId: 'user-3',
-    displayName: 'Emma',
+    household_id: 'household-1',
+    user_id: 'user-3',
+    display_name: 'Emma',
     role: 'member',
     color: '#f59e0b', // amber
-    createdAt: '2025-01-01',
+    created_at: '2025-01-01',
   },
   {
     id: 'member-4',
-    householdId: 'household-1',
-    userId: 'user-4',
-    displayName: 'Lucas',
+    household_id: 'household-1',
+    user_id: 'user-4',
+    display_name: 'Lucas',
     role: 'member',
     color: '#10b981', // emerald
-    createdAt: '2025-01-01',
+    created_at: '2025-01-01',
   },
 ]
 
 export const mockTasks: Task[] = [
   {
     id: 'task-1',
-    householdId: 'household-1',
-    createdBy: 'user-1',
-    assigneeId: 'member-1',
+    household_id: 'household-1',
+    created_by: 'user-1',
+    assignee_id: 'member-1',
     title: 'Afval buiten zetten',
     description: 'Grijze container aan de straat',
-    dueDate: '2025-04-21', // Monday
+    due_date: '2025-04-21', // Monday
     status: 'todo',
     recurrence: 'weekly',
-    isMeal: false,
-    createdAt: '2025-04-19',
-    updatedAt: '2025-04-19',
+    is_meal: false,
+    created_at: '2025-04-19',
+    updated_at: '2025-04-19',
   },
   {
     id: 'task-2',
-    householdId: 'household-1',
-    createdBy: 'user-2',
-    assigneeId: 'member-2',
+    household_id: 'household-1',
+    created_by: 'user-2',
+    assignee_id: 'member-2',
     title: 'Keuken opruimen',
-    dueDate: '2025-04-21',
+    due_date: '2025-04-21',
     status: 'todo',
     recurrence: 'daily',
-    isMeal: false,
-    createdAt: '2025-04-19',
-    updatedAt: '2025-04-19',
+    is_meal: false,
+    created_at: '2025-04-19',
+    updated_at: '2025-04-19',
   },
   {
     id: 'task-3',
-    householdId: 'household-1',
-    createdBy: 'user-1',
-    assigneeId: 'member-3',
+    household_id: 'household-1',
+    created_by: 'user-1',
+    assignee_id: 'member-3',
     title: 'Huiswerk maken',
-    dueDate: '2025-04-21',
+    due_date: '2025-04-21',
     status: 'todo',
     recurrence: 'daily',
-    isMeal: false,
-    createdAt: '2025-04-19',
-    updatedAt: '2025-04-19',
+    is_meal: false,
+    created_at: '2025-04-19',
+    updated_at: '2025-04-19',
   },
   {
     id: 'task-4',
-    householdId: 'household-1',
-    createdBy: 'user-2',
-    assigneeId: 'member-4',
+    household_id: 'household-1',
+    created_by: 'user-2',
+    assignee_id: 'member-4',
     title: 'Tanden poetsen',
-    dueDate: '2025-04-21',
+    due_date: '2025-04-21',
     status: 'todo',
     recurrence: 'daily',
-    isMeal: false,
-    createdAt: '2025-04-19',
-    updatedAt: '2025-04-19',
+    is_meal: false,
+    created_at: '2025-04-19',
+    updated_at: '2025-04-19',
   },
   {
     id: 'task-5',
-    householdId: 'household-1',
-    createdBy: 'user-1',
-    assigneeId: 'member-1',
+    household_id: 'household-1',
+    created_by: 'user-1',
+    assignee_id: 'member-1',
     title: 'Boodschappen doen',
-    dueDate: '2025-04-22', // Tuesday
+    due_date: '2025-04-22', // Tuesday
     status: 'todo',
     recurrence: 'weekly',
-    isMeal: false,
-    createdAt: '2025-04-19',
-    updatedAt: '2025-04-19',
+    is_meal: false,
+    created_at: '2025-04-19',
+    updated_at: '2025-04-19',
   },
   {
     id: 'task-6',
-    householdId: 'household-1',
-    createdBy: 'user-2',
-    assigneeId: 'member-2',
+    household_id: 'household-1',
+    created_by: 'user-2',
+    assignee_id: 'member-2',
     title: 'Wasmachine aanzetten',
-    dueDate: '2025-04-23', // Wednesday
+    due_date: '2025-04-23', // Wednesday
     status: 'todo',
     recurrence: 'weekly',
-    isMeal: false,
-    createdAt: '2025-04-19',
-    updatedAt: '2025-04-19',
+    is_meal: false,
+    created_at: '2025-04-19',
+    updated_at: '2025-04-19',
   },
 ]
 
 // Helper functions
 export function getTasksForMember(tasks: Task[], memberId: string): Task[] {
-  return tasks.filter(task => task.assigneeId === memberId)
+  return tasks.filter(task => task.assignee_id === memberId)
 }
 
 export function getTasksForDate(tasks: Task[], date: string): Task[] {
-  return tasks.filter(task => task.dueDate === date)
+  return tasks.filter(task => task.due_date === date)
 }
 
 export function getWeekDates(startDate: Date = new Date()): string[] {
