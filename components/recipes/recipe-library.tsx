@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Search, SlidersHorizontal, Heart } from 'lucide-react'
 import { RecipeCard } from './recipe-card'
+import { RecipeDetail } from './recipe-detail'
 import { mockRecipes, type Recipe } from '@/lib/app-data'
 import { cn } from '@/lib/utils'
 
@@ -17,6 +18,8 @@ export function RecipeLibrary() {
   const [recipes, setRecipes] = useState<Recipe[]>(mockRecipes)
   const [activeFilter, setActiveFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
 
   const handleToggleFavorite = (id: string) => {
     setRecipes((prev) =>
@@ -46,6 +49,16 @@ export function RecipeLibrary() {
   })
 
   const favoriteCount = recipes.filter((r) => r.isFavorite).length
+
+  const handleRecipeClick = (recipe: Recipe) => {
+    setSelectedRecipe(recipe)
+    setIsDetailOpen(true)
+  }
+
+  const handleCloseDetail = () => {
+    setIsDetailOpen(false)
+    setSelectedRecipe(null)
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -106,7 +119,7 @@ export function RecipeLibrary() {
                 key={recipe.id}
                 recipe={recipe}
                 onToggleFavorite={handleToggleFavorite}
-                onClick={() => console.log('Open recipe', recipe.id)}
+                onClick={() => handleRecipeClick(recipe)}
               />
             ))}
           </div>
@@ -122,6 +135,13 @@ export function RecipeLibrary() {
           </div>
         )}
       </main>
+
+      {/* Recipe Detail Modal */}
+      <RecipeDetail
+        recipe={selectedRecipe}
+        isOpen={isDetailOpen}
+        onClose={handleCloseDetail}
+      />
     </div>
   )
 }
