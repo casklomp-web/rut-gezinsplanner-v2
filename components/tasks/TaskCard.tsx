@@ -7,6 +7,7 @@ import { Task, TaskStatus, TaskPriority } from '@/lib/types/task';
 import { useTaskStore } from '@/lib/store/taskStore';
 import { DeleteConfirmModal } from '@/components/ui/DeleteConfirmModal';
 import { RecurrenceBadge } from './RecurrenceSelector';
+import { TaskDetailView } from './TaskDetailView';
 
 interface TaskCardProps {
   task: Task;
@@ -72,9 +73,12 @@ export function TaskCard({ task, onEdit, expanded = false, onToggleExpand }: Tas
     setShowDeleteModal(false);
   };
 
+  const [showDetailView, setShowDetailView] = useState(false);
+
   return (
     <>
       <div
+        onClick={() => setShowDetailView(true)}
         className={cn(
           'bg-white dark:bg-gray-800 rounded-xl border-2 transition-all overflow-hidden',
           task.status === 'done'
@@ -90,7 +94,10 @@ export function TaskCard({ task, onEdit, expanded = false, onToggleExpand }: Tas
           <div className="flex items-start gap-3">
             {/* Status Checkbox */}
             <button
-              onClick={handleStatusToggle}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleStatusToggle();
+              }}
               className={cn(
                 'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors mt-0.5',
                 task.status === 'done'
@@ -118,7 +125,10 @@ export function TaskCard({ task, onEdit, expanded = false, onToggleExpand }: Tas
                 
                 {/* Expand/Collapse */}
                 <button
-                  onClick={handleToggleExpand}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleExpand();
+                  }}
                   className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
                   aria-label={isExpanded ? 'Inklappen' : 'Uitklappen'}
                 >
@@ -282,14 +292,20 @@ export function TaskCard({ task, onEdit, expanded = false, onToggleExpand }: Tas
             {/* Actions */}
             <div className="flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
               <button
-                onClick={() => onEdit(task)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(task);
+                }}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-[#4A90A4] hover:bg-[#4A90A4]/10 rounded-lg transition-colors"
               >
                 <Edit2 className="w-4 h-4" />
                 Bewerken
               </button>
               <button
-                onClick={() => setShowDeleteModal(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteModal(true);
+                }}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
@@ -310,6 +326,17 @@ export function TaskCard({ task, onEdit, expanded = false, onToggleExpand }: Tas
         itemName={task.title}
         confirmText="Verwijderen"
         cancelText="Annuleren"
+      />
+
+      {/* Detail View */}
+      <TaskDetailView
+        task={task}
+        isOpen={showDetailView}
+        onClose={() => setShowDetailView(false)}
+        onEdit={() => {
+          setShowDetailView(false);
+          onEdit(task);
+        }}
       />
     </>
   );
