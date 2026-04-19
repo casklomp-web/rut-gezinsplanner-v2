@@ -19,8 +19,18 @@ const config: Config = {
   ],
   collectCoverageFrom: [
     'lib/**/*.{ts,tsx}',
+    'components/**/*.{ts,tsx}',
     '!lib/**/*.d.ts',
+    '!lib/supabase/**',
   ],
+  coverageThreshold: {
+    global: {
+      branches: 50,
+      functions: 50,
+      lines: 50,
+      statements: 50,
+    },
+  },
 };
 
 export default config;
