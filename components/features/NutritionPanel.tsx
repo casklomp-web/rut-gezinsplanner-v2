@@ -45,7 +45,7 @@ export function NutritionPanel({
   // Weekly view
   if (week && mealsData.size > 0) {
     const weekly = calculateWeeklyNutrition(week, mealsData);
-    return <WeeklyNutritionView weekly={weekly} className={className} />;
+    return <WeeklyNutritionView weekly={weekly} week={week} className={className} />;
   }
 
   return null;
@@ -219,19 +219,41 @@ function DailyNutritionView({
 
 function WeeklyNutritionView({
   weekly,
+  week,
   className,
 }: {
   weekly: ReturnType<typeof calculateWeeklyNutrition>;
+  week: Week;
   className?: string;
 }) {
+  // Calculate completion based on checked days (all meals completed)
+  const completedDays = week.days.filter(day => {
+    return day.meals.breakfast.completed && 
+           day.meals.lunch.completed && 
+           day.meals.dinner.completed;
+  }).length;
+  const completionPercentage = Math.round((completedDays / week.days.length) * 100);
+
   return (
     <div className={cn('bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 space-y-4', className)}>
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-800 dark:text-gray-200">Week overzicht</h3>
-        <span className="text-sm text-gray-600 dark:text-gray-400">
-          {weekly.adherence}% binnen doel
+        <span className="text-sm text-[#7CB342] font-medium">
+          {completionPercentage}% voltooid
         </span>
       </div>
+      
+      {/* Progress bar */}
+      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div 
+          className="h-full bg-[#7CB342] transition-all duration-500"
+          style={{ width: `${completionPercentage}%` }}
+        />
+      </div>
+      
+      <p className="text-xs text-gray-500">
+        {completedDays} van {week.days.length} dagen volledig afgevinkt
+      </p>
 
       <div className="grid grid-cols-2 gap-4">
         <StatCard label="Gem. calorieën" value={weekly.average.calories} unit="kcal" />

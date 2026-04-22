@@ -7,6 +7,7 @@ import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { Providers } from "@/components/providers";
 import { KeyboardShortcutsProvider } from "@/components/providers/KeyboardShortcutsProvider";
 import { PWAInstallPrompt } from "@/components/ui/PWAInstallPrompt";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 
 export const metadata: Metadata = {
   title: "Rut - Gezinsplanner",
@@ -51,16 +52,18 @@ export default function RootLayout({
           <KeyboardShortcutsProvider>
             <ErrorBoundary>
               <ToastProvider>
-                <div className="lg:flex lg:min-h-screen">
-                  <SidebarNav />
-                  <main className="flex-1 pb-20 lg:pb-0 lg:ml-64 w-full">
-                    <div className="w-full lg:max-w-5xl xl:max-w-6xl lg:px-8 xl:px-12">
-                      {children}
-                    </div>
-                  </main>
-                </div>
-                <BottomNav />
-                <PWAInstallPrompt />
+                <AuthProvider>
+                  <div className="lg:flex lg:min-h-screen">
+                    <SidebarNav />
+                    <main className="flex-1 pb-20 lg:pb-0 lg:ml-64 w-full">
+                      <div className="w-full lg:max-w-5xl xl:max-w-6xl lg:px-8 xl:px-12">
+                        {children}
+                      </div>
+                    </main>
+                  </div>
+                  <BottomNav />
+                  <PWAInstallPrompt />
+                </AuthProvider>
               </ToastProvider>
             </ErrorBoundary>
           </KeyboardShortcutsProvider>
