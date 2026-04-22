@@ -126,7 +126,7 @@ interface TaskState {
 export const useTaskStore = create<TaskState>()(
   persist(
     (set, get) => ({
-      tasks: mockTasks,
+      tasks: [],
       familyMembers: mockFamilyMembers,
       isLoading: false,
       error: null,

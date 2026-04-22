@@ -179,8 +179,8 @@ export function TaskBoard() {
         ))}
       </div>
 
-      {/* Task List */}
-      <div className="space-y-3">
+      {/* Task List - Horizontal scroll on desktop, vertical on mobile */}
+      <div className="lg:flex lg:gap-4 lg:overflow-x-auto lg:pb-4 lg:-mx-4 lg:px-4 lg:snap-x lg:snap-mandatory space-y-3 lg:space-y-0">
         {filteredTasks.length === 0 ? (
           searchQuery ? (
             <NoSearchResultsEmptyState onClear={() => setSearchQuery('')} />
@@ -197,13 +197,14 @@ export function TaskBoard() {
           )
         ) : (
           filteredTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onEdit={handleEditTask}
-              expanded={expandedTaskId === task.id}
-              onToggleExpand={() => handleToggleExpand(task.id)}
-            />
+            <div key={task.id} className="lg:flex-shrink-0 lg:w-80 lg:snap-start">
+              <TaskCard
+                task={task}
+                onEdit={handleEditTask}
+                expanded={expandedTaskId === task.id}
+                onToggleExpand={() => handleToggleExpand(task.id)}
+              />
+            </div>
           ))
         )}
       </div>
