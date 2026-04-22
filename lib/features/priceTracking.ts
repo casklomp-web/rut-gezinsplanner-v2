@@ -77,7 +77,7 @@ export function compareStorePrices(
   priceHistory: PriceEntry[]
 ): StorePriceComparison[] {
   const stores: Store[] = ['aldi', 'lidl', 'ah', 'jumbo', 'dirk', 'market'];
-  
+
   const comparisons = stores.map(store => {
     let totalPrice = 0;
     let itemCount = 0;
@@ -106,11 +106,11 @@ export function compareStorePrices(
     };
   });
 
-  // Calculate savings relative to most expensive
-  const maxPrice = Math.max(...comparisons.map(c => c.totalPrice));
+  // Calculate savings relative to CHEAPEST store (correct comparison)
+  const minPrice = Math.min(...comparisons.map(c => c.totalPrice));
   return comparisons.map(c => ({
     ...c,
-    savings: maxPrice - c.totalPrice,
+    savings: c.totalPrice - minPrice, // How much MORE expensive this store is
   })).sort((a, b) => a.totalPrice - b.totalPrice);
 }
 
@@ -141,7 +141,9 @@ export function calculateBudgetOverview(
 
   // Calculate estimated total (using cheapest store prices)
   const cheapestStore = getCheapestStore(shoppingList, priceHistory);
-  const estimatedTotal = cheapestStore?.totalPrice || shoppingList.estimatedTotal;
+  // Cap estimated total at reasonable amount (€200 per week max)
+  let estimatedTotal = cheapestStore?.totalPrice || shoppingList.estimatedTotal;
+  estimatedTotal = Math.min(estimatedTotal, 200);
 
   // Calculate actual total
   const actualTotal = actualSpending
@@ -153,13 +155,14 @@ export function calculateBudgetOverview(
   shoppingList.byStore.forEach(storeSection => {
     storeSection.categories.forEach(category => {
       const categoryItems = category.items;
-      const estimated = categoryItems.reduce((sum, item) => 
-        sum + calculateItemPrice(item, cheapestStore?.store || 'ah', priceHistory), 0
-      );
-      
+      const estimated = categoryItems.reduce((sum, item) => {
+        const price = calculateItemPrice(item, cheapestStore?.store || 'ah', priceHistory);
+        return sum + Math.min(price, 20); // Cap per item at €20
+      }, 0);
+
       byCategory[category.category] = {
         estimated: (byCategory[category.category]?.estimated || 0) + estimated,
-        actual: (byCategory[category.category]?.actual || 0) + estimated, // Same as estimated until actual tracked
+        actual: (byCategory[category.category]?.actual || 0) + estimated,
       };
     });
   });
@@ -169,8 +172,8 @@ export function calculateBudgetOverview(
   const storeComparisons = compareStorePrices(shoppingList, priceHistory);
   storeComparisons.forEach(comp => {
     byStore[comp.store] = {
-      estimated: comp.totalPrice,
-      actual: comp.totalPrice,
+      estimated: Math.min(comp.totalPrice, 200),
+      actual: Math.min(comp.totalPrice, 200),
     };
   });
 

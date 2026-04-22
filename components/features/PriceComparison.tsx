@@ -70,9 +70,9 @@ export function PriceComparison({ week, priceHistory, className }: PriceComparis
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {cheapestStore && cheapestStore.savings > 0 && (
+          {cheapestStore && (
             <span className="text-sm font-medium text-green-600 dark:text-green-400">
-              Bespaar {formatPrice(cheapestStore.savings)}
+              Goedkoopste: {formatPrice(cheapestStore.totalPrice)}
             </span>
           )}
           {isExpanded ? (
@@ -124,11 +124,15 @@ export function PriceComparison({ week, priceHistory, className }: PriceComparis
                     <p className="font-bold text-gray-800 dark:text-gray-200">
                       {formatPrice(comp.totalPrice)}
                     </p>
-                    {comp.savings > 0 && (
+                    {index === 0 ? (
                       <p className="text-xs text-green-600 dark:text-green-400">
-                        -{formatPrice(comp.savings)}
+                        Goedkoopste
                       </p>
-                    )}
+                    ) : comp.savings > 0 ? (
+                      <p className="text-xs text-red-500">
+                        +{formatPrice(comp.savings)} duurder
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               ))}
