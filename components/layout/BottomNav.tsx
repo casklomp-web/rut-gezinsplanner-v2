@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils";
 import { useHaptic, HAPTIC_PATTERNS } from "@/components/providers/HapticProvider";
 
 const navItems = [
-  { href: "/today", label: "Vandaag", icon: Home },
-  { href: "/week", label: "Week", icon: Calendar },
-  { href: "/tasks", label: "Taken", icon: ClipboardList },
+  { href: "/", label: "Home", icon: Home },
+  { href: "/today", label: "Vandaag", icon: Calendar },
+  { href: "/week", label: "Week", icon: ClipboardList },
   { href: "/shopping", label: "Boodschappen", icon: ShoppingCart },
   { href: "/recipes", label: "Recepten", icon: ChefHat },
 ];
@@ -26,12 +26,12 @@ export function BottomNav() {
   };
 
   return (
-    <nav 
+    <nav
       className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-pb z-40 lg:hidden"
       role="navigation"
       aria-label="Hoofdnavigatie"
     >
-      <div className="flex justify-around items-center h-16 max-w-lg mx-auto px-2">
+      <div className="flex justify-around items-center h-14 max-w-lg mx-auto px-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -50,13 +50,13 @@ export function BottomNav() {
               aria-current={isActive ? 'page' : undefined}
               aria-label={item.label}
             >
-              <Icon 
-                size={22} 
+              <Icon
+                size={20}
                 strokeWidth={isActive ? 2.5 : 2}
-                className="mb-1"
+                className="mb-0.5"
                 aria-hidden="true"
               />
-              <span className="text-xs font-medium">{item.label}</span>
+              <span className="text-[10px] font-medium">{item.label}</span>
             </Link>
           );
         })}
