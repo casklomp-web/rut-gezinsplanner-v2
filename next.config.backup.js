@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // output: 'export' verwijderd voor Vercel server-side rendering
+  output: 'export',
+  distDir: 'dist',
   images: {
     unoptimized: true
   },
