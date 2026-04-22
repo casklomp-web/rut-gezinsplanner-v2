@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense, useCallback } from 'react';
-import { Search, Plus, Heart, Clock, ChefHat, Edit2, Trash2, X, FileDown, Share2, Mic, Sparkles } from 'lucide-react';
+import { Search, Plus, Heart, Clock, ChefHat, Edit2, Trash2, X, FileDown, Mic, Sparkles, CalendarDays } from 'lucide-react';
 import { meals as defaultMeals } from '@/lib/data/meals';
 import { Meal, MealCategory, MealTag } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
@@ -19,6 +19,7 @@ import { SmartSuggestions, MoreLikeThis } from '@/components/features/SmartSugge
 import { VoiceInputButton } from '@/components/features/VoiceInputButton';
 import { smartSearchMeals } from '@/lib/features/smartSuggestions';
 import { useUserStore } from '@/lib/store/userStore';
+import { useRouter } from 'next/navigation';
 
 const categoryFilters: { value: MealCategory | 'all'; label: string }[] = [
   { value: 'all', label: 'Alles' },
@@ -55,6 +56,8 @@ function RecipesPageContent() {
   const [editingRecipe, setEditingRecipe] = useState<Meal | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [recipeToDelete, setRecipeToDelete] = useState<Meal | null>(null);
+  
+  const router = useRouter();
   
   // Load search history from localStorage
   useEffect(() => {
@@ -190,6 +193,13 @@ function RecipesPageContent() {
     setRecipes(recipes.map(r => 
       r.id === recipeId ? { ...r, isFavorite: !r.isFavorite } : r
     ));
+  };
+
+  const handlePlanRecipe = (recipe: Meal) => {
+    // Store selected recipe in sessionStorage for week page to pick up
+    sessionStorage.setItem('rut-selected-recipe', JSON.stringify(recipe));
+    router.push('/week');
+    toast.success(`${recipe.name} geselecteerd. Klik op een maaltijd in de week om toe te wijzen.`);
   };
 
   const handleExportRecipes = () => {
@@ -495,6 +505,14 @@ function RecipesPageContent() {
                 {/* Actions */}
                 <div className="flex flex-col gap-2">
                   <button
+                    onClick={() => handlePlanRecipe(recipe)}
+                    className="p-2 bg-[#4A90A4] hover:bg-[#3a7a8c] text-white rounded-full transition-colors"
+                    aria-label={`Plan ${recipe.name} in week`}
+                    title="Plan in week"
+                  >
+                    <CalendarDays className="w-5 h-5" aria-hidden="true" />
+                  </button>
+                  <button
                     onClick={() => toggleFavorite(recipe.id)}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                     aria-label={recipe.isFavorite ? 'Verwijder van favorieten' : 'Voeg toe aan favorieten'}
@@ -510,11 +528,6 @@ function RecipesPageContent() {
                       aria-hidden="true"
                     />
                   </button>
-                  <SocialShareButtons
-                    meal={recipe}
-                    type="recipe"
-                    className="!w-9 !h-9 !p-2"
-                  />
                 </div>
               </div>
             </article>
@@ -537,6 +550,8 @@ function RecipesPageContent() {
         onSave={handleSaveRecipe}
         recipe={editingRecipe}
       />
+
+
       
       {/* Delete Confirm Modal */}
       <DeleteConfirmModal
