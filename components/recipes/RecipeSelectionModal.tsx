@@ -42,12 +42,17 @@ export function RecipeSelectionModal({
   const [step, setStep] = useState<Step>('select-recipe');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRecipe, setSelectedRecipe] = useState<Meal | null>(null);
-  const [selectedDay, setSelectedDay] = useState<DayOfWeek | null>(
-    preselectedDayId ? (preselectedDayId as DayOfWeek) : null
-  );
+  const [selectedDay, setSelectedDay] = useState<DayOfWeek | null>(null);
   const [selectedMealType, setSelectedMealType] = useState<MealType | null>(
     preselectedMealType || null
   );
+
+  // Get dayOfWeek from preselectedDayId
+  const getDayOfWeekFromId = (dayId: string | undefined): DayOfWeek | null => {
+    if (!dayId || !currentWeek) return null;
+    const day = currentWeek.days.find(d => d.id === dayId);
+    return day?.dayOfWeek || null;
+  };
 
   const { currentWeek, swapMeal } = useWeekStore();
 
@@ -95,11 +100,16 @@ export function RecipeSelectionModal({
 
   const handleRecipeSelect = (recipe: Meal) => {
     setSelectedRecipe(recipe);
-    
+
     // If both day and meal type are preselected, assign immediately
     if (preselectedDayId && preselectedMealType) {
       handleAssign(recipe.id, preselectedDayId, preselectedMealType);
     } else {
+      // If only day is preselected, set it
+      if (preselectedDayId) {
+        const dayOfWeek = getDayOfWeekFromId(preselectedDayId);
+        setSelectedDay(dayOfWeek);
+      }
       setStep('select-day-meal');
     }
   };
@@ -117,7 +127,7 @@ export function RecipeSelectionModal({
     setStep('select-recipe');
     setSearchQuery('');
     setSelectedRecipe(null);
-    setSelectedDay(preselectedDayId ? (preselectedDayId as DayOfWeek) : null);
+    setSelectedDay(null);
     setSelectedMealType(preselectedMealType || null);
     onClose();
   };
@@ -373,11 +383,11 @@ export function RecipeSelectionModal({
           <div className="p-4 border-t border-gray-200 shrink-0 space-y-2">
             <Button
               className="w-full"
-              disabled={!canAssign}
+              disabled={!canAssign && !(preselectedDayId && selectedMealType)}
               onClick={() => {
-                if (selectedRecipe && selectedDay && selectedMealType) {
-                  const dayId =
-                    preselectedDayId || getDayIdFromDayOfWeek(selectedDay);
+                if (selectedRecipe && selectedMealType) {
+                  // Use preselectedDayId if available, otherwise get from selectedDay
+                  const dayId = preselectedDayId || (selectedDay ? getDayIdFromDayOfWeek(selectedDay) : null);
                   if (dayId) {
                     handleAssign(
                       selectedRecipe.id,
