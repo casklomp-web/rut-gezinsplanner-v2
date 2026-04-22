@@ -78,24 +78,32 @@ export function WeekDayCard({ day, onSelectMeal }: WeekDayCardProps) {
         />
       </div>
 
-      {/* Training */}
+      {/* Training - Visually separated from meals */}
       {day.isTrainingDay && day.training && (
-        <button
-          onClick={handleTrainingToggle}
-          className={cn(
-            "w-full mt-3 p-2 rounded-lg flex items-center gap-2 transition-colors",
-            day.training.completed
-              ? "bg-[#7CB342]/10 text-[#7CB342]"
-              : "bg-[#4A90A4]/10 text-[#4A90A4]"
-          )}
-          aria-pressed={day.training.completed}
-        >
-          <Dumbbell className="w-4 h-4" />
-          <span className="text-sm font-medium flex-1 text-left">
-            Training {day.training.time && `(${day.training.time})`}
-          </span>
-          {day.training.completed && <Check className="w-4 h-4" />}
-        </button>
+        <div className="mt-4 pt-3 border-t border-gray-200">
+          <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">Beweging</p>
+          <button
+            onClick={handleTrainingToggle}
+            className={cn(
+              "w-full p-3 rounded-xl flex items-center gap-3 transition-colors",
+              day.training.completed
+                ? "bg-[#7CB342]/10 text-[#7CB342] border border-[#7CB342]/20"
+                : "bg-[#4A90A4]/5 text-[#4A90A4] border border-[#4A90A4]/20 hover:bg-[#4A90A4]/10"
+            )}
+            aria-pressed={day.training.completed}
+          >
+            <div className={cn(
+              "w-8 h-8 rounded-full flex items-center justify-center",
+              day.training.completed ? "bg-[#7CB342]/20" : "bg-[#4A90A4]/10"
+            )}>
+              <Dumbbell className="w-4 h-4" />
+            </div>
+            <span className="text-sm font-medium flex-1 text-left">
+              Training {day.training.time && `(${day.training.time})`}
+            </span>
+            {day.training.completed && <Check className="w-5 h-5" />}
+          </button>
+        </div>
       )}
     </div>
   );

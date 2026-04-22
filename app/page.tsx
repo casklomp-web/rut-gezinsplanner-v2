@@ -178,45 +178,55 @@ function DayView({ day }: { day: Day }) {
         </button>
       </div>
 
-      {/* Training */}
+      {/* Training - Visually separated section */}
       {day.isTrainingDay && day.training && (
-        <button
-          onClick={handleTrainingToggle}
-          className={cn(
-            "w-full rounded-xl p-4 border-2 transition-all text-left",
-            day.training.completed
-              ? "border-[#7CB342] bg-[#7CB342]/5"
-              : "border-[#4A90A4] bg-[#4A90A4]/5"
-          )}
-          aria-pressed={day.training.completed}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-[#4A90A4] uppercase tracking-wide font-medium">Training</p>
-              <p className={cn(
-                "font-medium dark:text-gray-200",
-                day.training.completed && "line-through text-gray-400"
-              )}>
-                {day.training.description || "Training"}
-              </p>
-              {day.training.time && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">{day.training.time}</p>
-              )}
-            </div>
-            <div className={cn(
-              "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
+        <div className="pt-2">
+          <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">Beweging</p>
+          <button
+            onClick={handleTrainingToggle}
+            className={cn(
+              "w-full rounded-xl p-4 border-2 transition-all text-left",
               day.training.completed
-                ? "bg-[#7CB342] border-[#7CB342]"
-                : "border-[#4A90A4]"
-            )}>
-              {day.training.completed && (
-                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              )}
+                ? "border-[#7CB342] bg-[#7CB342]/5"
+                : "border-gray-200 bg-white dark:bg-gray-800 hover:border-[#4A90A4]/30"
+            )}
+            aria-pressed={day.training.completed}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center",
+                  day.training.completed ? "bg-[#7CB342]/20" : "bg-[#4A90A4]/10"
+                )}>
+                  <span className="text-lg">💪</span>
+                </div>
+                <div>
+                  <p className={cn(
+                    "font-medium dark:text-gray-200",
+                    day.training.completed && "line-through text-gray-400"
+                  )}>
+                    {day.training.description || "Training"}
+                  </p>
+                  {day.training.time && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{day.training.time}</p>
+                  )}
+                </div>
+              </div>
+              <div className={cn(
+                "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
+                day.training.completed
+                  ? "bg-[#7CB342] border-[#7CB342]"
+                  : "border-gray-300 dark:border-gray-600"
+              )}>
+                {day.training.completed && (
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
             </div>
-          </div>
-        </button>
+          </button>
+        </div>
       )}
 
       {/* Checkins */}
