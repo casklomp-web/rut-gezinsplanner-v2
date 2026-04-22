@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useHaptic, HAPTIC_PATTERNS } from "@/components/providers/HapticProvider";
 
 const navItems = [
-  { href: "/", label: "Vandaag", icon: Home },
+  { href: "/today", label: "Vandaag", icon: Home },
   { href: "/week", label: "Week", icon: Calendar },
   { href: "/tasks", label: "Taken", icon: ClipboardList },
   { href: "/shopping", label: "Boodschappen", icon: ShoppingCart },
