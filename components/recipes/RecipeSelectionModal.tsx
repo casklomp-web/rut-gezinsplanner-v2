@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { X, Search, ChevronRight, Utensils, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { meals as defaultMeals } from '@/lib/data/meals';
@@ -50,6 +50,18 @@ export function RecipeSelectionModal({
   );
 
   const { currentWeek, swapMeal } = useWeekStore();
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   // Filter recipes based on search query
   const filteredRecipes = useMemo(() => {
@@ -122,14 +134,14 @@ export function RecipeSelectionModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={handleClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="recipe-modal-title"
     >
       <div
-        className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col"
+        className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
