@@ -48,15 +48,19 @@ export const useWeekStore = create<WeekState>()(
           set({ error: 'Geen gebruiker gevonden', isLoading: false });
           return;
         }
-        
+
         set({ isLoading: true, error: null });
-        
+
         try {
           const newWeek = generateWeek(new Date(), primaryUser);
-          
+
+          // Auto-generate shopping list for new week
+          const shoppingList = generateShoppingListLogic(newWeek);
+          const weekWithShopping = { ...newWeek, shoppingList };
+
           set(state => ({
-            currentWeek: newWeek,
-            weekHistory: state.currentWeek 
+            currentWeek: weekWithShopping,
+            weekHistory: state.currentWeek
               ? [state.currentWeek, ...state.weekHistory].slice(0, 4)
               : state.weekHistory,
             isLoading: false,
@@ -64,9 +68,9 @@ export const useWeekStore = create<WeekState>()(
           }));
         } catch (error) {
           console.error('Week generation error:', error);
-          set({ 
-            error: error instanceof Error ? error.message : 'Kon week niet genereren', 
-            isLoading: false 
+          set({
+            error: error instanceof Error ? error.message : 'Kon week niet genereren',
+            isLoading: false
           });
         }
       },
@@ -165,28 +169,33 @@ export const useWeekStore = create<WeekState>()(
       swapMeal: (dayId, mealType, newMealId) => {
         const week = get().currentWeek;
         if (!week) return;
-        
+
         const updatedDays = week.days.map(d => {
           if (d.id !== dayId) return d;
           return swapMeal(d, mealType, newMealId);
         });
-        
+
+        const updatedWeek = { ...week, days: updatedDays, updatedAt: new Date() };
+
+        // Auto-regenerate shopping list when meals change
+        const shoppingList = generateShoppingListLogic(updatedWeek);
+
         set({
-          currentWeek: { ...week, days: updatedDays, updatedAt: new Date() }
+          currentWeek: { ...updatedWeek, shoppingList }
         });
       },
       
       swapMealBetweenDays: (sourceDayId: string, sourceMealType: "breakfast" | "lunch" | "dinner", targetDayId: string, targetMealType: "breakfast" | "lunch" | "dinner") => {
         const week = get().currentWeek;
         if (!week) return;
-        
+
         const sourceDay = week.days.find(d => d.id === sourceDayId);
         const targetDay = week.days.find(d => d.id === targetDayId);
         if (!sourceDay || !targetDay) return;
-        
+
         const sourceMeal = sourceDay.meals[sourceMealType];
         const targetMeal = targetDay.meals[targetMealType];
-        
+
         const updatedDays = week.days.map(d => {
           if (d.id === sourceDayId) {
             return {
@@ -216,9 +225,14 @@ export const useWeekStore = create<WeekState>()(
           }
           return d;
         });
-        
+
+        const updatedWeek = { ...week, days: updatedDays, updatedAt: new Date() };
+
+        // Auto-regenerate shopping list when meals change
+        const shoppingList = generateShoppingListLogic(updatedWeek);
+
         set({
-          currentWeek: { ...week, days: updatedDays, updatedAt: new Date() }
+          currentWeek: { ...updatedWeek, shoppingList }
         });
       },
       

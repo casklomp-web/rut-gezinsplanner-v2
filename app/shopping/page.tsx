@@ -128,7 +128,10 @@ function ShoppingPageContent() {
         <EmptyState
           icon={ShoppingCart}
           title="Geen boodschappenlijst"
-          description="Genereer eerst een weekplanning"
+          description={currentWeek 
+            ? "Er is iets mis gegaan bij het genereren. Probeer de week opnieuw te genereren."
+            : "Genereer eerst een weekplanning om een boodschappenlijst te zien."
+          }
           action={
             <Button onClick={() => window.location.href = '/week'}>
               <CalendarDays className="w-4 h-4 mr-2" />
