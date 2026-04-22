@@ -20,6 +20,7 @@ import { VoiceInputButton } from '@/components/features/VoiceInputButton';
 import { smartSearchMeals } from '@/lib/features/smartSuggestions';
 import { useUserStore } from '@/lib/store/userStore';
 import { useRouter } from 'next/navigation';
+import { fetchRecipeImage, getPlaceholderImage } from '@/lib/services/imageService';
 
 const categoryFilters: { value: MealCategory | 'all'; label: string }[] = [
   { value: 'all', label: 'Alles' },
@@ -56,8 +57,29 @@ function RecipesPageContent() {
   const [editingRecipe, setEditingRecipe] = useState<Meal | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [recipeToDelete, setRecipeToDelete] = useState<Meal | null>(null);
-  
+  const [recipeImages, setRecipeImages] = useState<Map<string, string>>(new Map());
+
   const router = useRouter();
+
+  // Load images for recipes without images
+  useEffect(() => {
+    const loadImages = async () => {
+      const images = new Map<string, string>();
+      
+      for (const recipe of recipes) {
+        if (!recipe.imageUrl) {
+          const imageUrl = await fetchRecipeImage(recipe);
+          if (imageUrl) {
+            images.set(recipe.id, imageUrl);
+          }
+        }
+      }
+      
+      setRecipeImages(images);
+    };
+
+    loadImages();
+  }, [recipes]);
   
   // Load search history from localStorage
   useEffect(() => {
@@ -425,12 +447,12 @@ function RecipesPageContent() {
               <div className="flex items-start gap-4">
                 {/* Image */}
                 <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {recipe.imageUrl ? (
-                    <OptimizedImage
-                      src={recipe.imageUrl}
+                  {recipe.imageUrl || recipeImages.get(recipe.id) ? (
+                    <img
+                      src={recipe.imageUrl || recipeImages.get(recipe.id)}
                       alt={recipe.name}
                       className="w-full h-full object-cover"
-                      containerClassName="w-full h-full"
+                      loading="lazy"
                     />
                   ) : (
                     <ChefHat className="w-8 h-8 text-gray-400" aria-hidden="true" />
