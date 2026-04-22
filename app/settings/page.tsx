@@ -35,7 +35,7 @@ function SettingsPageContent() {
   };
 
   return (
-    <div className="px-4 py-6 max-w-md mx-auto">
+    <div className="px-4 py-6 w-full">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-[#2D3436] dark:text-gray-100">Instellingen</h1>
@@ -175,7 +175,7 @@ function SettingsPageContent() {
 
 export default function SettingsPage() {
   return (
-    <Suspense fallback={<div className="px-4 py-6 max-w-md mx-auto">Laden...</div>}>
+    <Suspense fallback={<div className="px-4 py-6 w-full">Laden...</div>}>
       <SettingsPageContent />
     </Suspense>
   );

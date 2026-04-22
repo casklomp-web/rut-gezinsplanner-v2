@@ -213,7 +213,7 @@ function RecipesPageContent() {
   
   if (isLoading) {
     return (
-      <div className="px-4 py-6 max-w-md mx-auto">
+      <div className="px-4 py-6 w-full">
         <RecipesListSkeleton />
       </div>
     );
@@ -222,7 +222,7 @@ function RecipesPageContent() {
   const hasActiveFilters = searchQuery || selectedCategory !== 'all' || selectedTags.length > 0 || showFavoritesOnly;
   
   return (
-    <div className="px-4 py-6 max-w-md mx-auto">
+    <div className="px-4 py-6 w-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[#2D3436] dark:text-gray-100">

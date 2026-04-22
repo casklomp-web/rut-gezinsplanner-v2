@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { SidebarNav } from "@/components/layout/SidebarNav";
 import { ToastProvider } from "@/components/ui/Toast";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { Providers } from "@/components/providers";
@@ -50,9 +51,14 @@ export default function RootLayout({
           <KeyboardShortcutsProvider>
             <ErrorBoundary>
               <ToastProvider>
-                <main className="pb-20 min-h-screen">
-                  {children}
-                </main>
+                <div className="lg:flex lg:min-h-screen">
+                  <SidebarNav />
+                  <main className="flex-1 pb-20 lg:pb-0 lg:ml-64 w-full">
+                    <div className="w-full lg:max-w-5xl xl:max-w-6xl lg:px-8 xl:px-12">
+                      {children}
+                    </div>
+                  </main>
+                </div>
                 <BottomNav />
                 <PWAInstallPrompt />
               </ToastProvider>

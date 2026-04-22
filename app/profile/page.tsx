@@ -37,7 +37,7 @@ function ProfilePageContent() {
   };
 
   return (
-    <div className="px-4 py-6 max-w-md mx-auto">
+    <div className="px-4 py-6 w-full">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[#2D3436]">Profiel</h1>
@@ -227,7 +227,7 @@ function ProfilePageContent() {
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={<div className="px-4 py-6 max-w-md mx-auto">Laden...</div>}>
+    <Suspense fallback={<div className="px-4 py-6 w-full">Laden...</div>}>
       <ProfilePageContent />
     </Suspense>
   );

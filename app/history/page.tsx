@@ -14,7 +14,7 @@ function HistoryPageContent() {
 
   if (weekHistory.length === 0) {
     return (
-      <div className="px-4 py-6 max-w-md mx-auto">
+      <div className="px-4 py-6 w-full">
         <EmptyState
           icon={CalendarDays}
           title="Geen geschiedenis"
@@ -30,7 +30,7 @@ function HistoryPageContent() {
   }
 
   return (
-    <div className="px-4 py-6 max-w-md mx-auto">
+    <div className="px-4 py-6 w-full">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-[#2D3436]">Geschiedenis</h1>

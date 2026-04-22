@@ -341,7 +341,7 @@ function TodayPageContent() {
   
   if (isLoading) {
     return (
-      <div className="px-4 py-6 max-w-md mx-auto">
+      <div className="px-4 py-6 w-full">
         <DayViewSkeleton />
       </div>
     );
@@ -349,7 +349,7 @@ function TodayPageContent() {
   
   if (!currentWeek || selectedDayIndex === null) {
     return (
-      <div className="px-4 py-6 max-w-md mx-auto">
+      <div className="px-4 py-6 w-full">
         <EmptyState
           icon={CalendarDays}
           title="Geen week gepland"
@@ -375,7 +375,7 @@ function TodayPageContent() {
   const mealsData = new Map(defaultMeals.map(m => [m.id, m]));
 
   return (
-    <div className="px-4 py-6 max-w-md mx-auto">
+    <div className="px-4 py-6 w-full">
       {/* Header */}
       <header className="mb-6">
         <div className="flex items-center justify-between mb-2">

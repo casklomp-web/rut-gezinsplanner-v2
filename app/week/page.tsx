@@ -43,7 +43,7 @@ function WeekPageContent() {
 
   if (isLoading) {
     return (
-      <div className="px-4 py-6 max-w-md mx-auto">
+      <div className="px-4 py-6 w-full">
         <WeekViewSkeleton />
       </div>
     );
@@ -51,7 +51,7 @@ function WeekPageContent() {
 
   if (!currentWeek) {
     return (
-      <div className="px-4 py-6 max-w-md mx-auto">
+      <div className="px-4 py-6 w-full">
         <EmptyState
           icon={CalendarDays}
           title="Geen week gepland"
@@ -77,7 +77,7 @@ function WeekPageContent() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div className="px-4 py-6 max-w-md mx-auto">
+      <div className="px-4 py-6 w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
