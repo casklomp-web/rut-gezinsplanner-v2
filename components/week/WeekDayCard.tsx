@@ -1,13 +1,15 @@
 'use client';
 
-import { Day, MealInstance } from '@/lib/types';
-import { UtensilsCrossed, Dumbbell, Check, X, ChevronRight } from 'lucide-react';
+import { Day, MealInstance, Ingredient } from '@/lib/types';
+import { UtensilsCrossed, Dumbbell, Check, X, ChevronRight, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { useWeekStore } from '@/lib/store/weekStore';
 import { useHaptic, HAPTIC_PATTERNS } from '@/components/providers/HapticProvider';
 import { toast } from '@/components/ui/Toast';
+import { QuickAddModal } from './QuickAddModal';
+import { useState } from 'react';
 
 interface WeekDayCardProps {
   day: Day;
@@ -15,10 +17,11 @@ interface WeekDayCardProps {
 }
 
 export function WeekDayCard({ day, onSelectMeal }: WeekDayCardProps) {
-  const { toggleMealComplete, toggleTrainingComplete, swapMeal } = useWeekStore();
+  const { toggleMealComplete, toggleTrainingComplete, swapMeal, addShoppingItem } = useWeekStore();
   const { vibrate } = useHaptic();
   const dayDate = parseISO(day.date);
   const isToday = day.date === new Date().toISOString().split('T')[0];
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 
   const handleMealToggle = (mealType: 'breakfast' | 'lunch' | 'dinner') => {
     vibrate(HAPTIC_PATTERNS.LIGHT);
@@ -36,6 +39,18 @@ export function WeekDayCard({ day, onSelectMeal }: WeekDayCardProps) {
     // Clear the meal by swapping to an empty/default meal
     swapMeal(day.id, mealType, 'empty_meal');
     toast.success('Maaltijd verwijderd');
+  };
+
+  const handleQuickAdd = (ingredient: Ingredient, amount: number, unit: string, mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack') => {
+    // Add to shopping list
+    addShoppingItem({
+      name: ingredient.name,
+      amount,
+      unit,
+      estimatedPrice: ingredient.estimatedPrice * amount,
+    });
+    
+    toast.success(`${amount} ${unit} ${ingredient.name} toegevoegd aan ${mealType === 'breakfast' ? 'ontbijt' : mealType === 'lunch' ? 'lunch' : mealType === 'dinner' ? 'diner' : 'tussendoortje'}`);
   };
 
   return (
@@ -64,6 +79,15 @@ export function WeekDayCard({ day, onSelectMeal }: WeekDayCardProps) {
           {format(dayDate, 'd MMM', { locale: nl })}
         </span>
       </div>
+
+      {/* Quick add button */}
+      <button
+        onClick={() => setIsQuickAddOpen(true)}
+        className="w-full mb-3 py-2 px-3 rounded-xl border-2 border-dashed border-[#4A90A4]/30 text-[#4A90A4] hover:border-[#4A90A4] hover:bg-[#4A90A4]/5 transition-all flex items-center justify-center gap-2"
+      >
+        <Plus className="w-4 h-4" />
+        <span className="text-sm font-medium">Snel iets toevoegen</span>
+      </button>
 
       {/* Meals */}
       <div className="space-y-2">
@@ -117,6 +141,14 @@ export function WeekDayCard({ day, onSelectMeal }: WeekDayCardProps) {
           </button>
         </div>
       )}
+
+      {/* Quick Add Modal */}
+      <QuickAddModal
+        isOpen={isQuickAddOpen}
+        onClose={() => setIsQuickAddOpen(false)}
+        onAdd={handleQuickAdd}
+        dayLabel={format(dayDate, 'EEEE d MMMM', { locale: nl })}
+      />
     </div>
   );
 }
