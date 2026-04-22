@@ -18,7 +18,8 @@ import { useOffline } from "@/components/providers/OfflineProvider";
 import { Suspense } from "react";
 import { PriceComparison } from "@/components/features/PriceComparison";
 import { VoiceInputButton } from "@/components/features/VoiceInputButton";
-import { ShoppingItem } from "@/lib/types";
+import { AddIngredientModal } from "@/components/shopping/AddIngredientModal";
+import { ShoppingItem, Ingredient } from "@/lib/types";
 
 const storeNames: Record<string, string> = {
   aldi: "ALDI",
@@ -46,6 +47,7 @@ function ShoppingPageContent() {
   const { currentWeek, isLoading, generateShoppingList, updateShoppingItem } = useWeekStore();
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { vibrate } = useHaptic();
   const { triggerSync } = useOffline();
   
@@ -107,6 +109,16 @@ function ShoppingPageContent() {
     // Implement search logic
   }, []);
 
+  const handleAddIngredient = (ingredient: Ingredient, amount: number, unit: string) => {
+    // Add to shopping list - this would need to be implemented in the store
+    toast.success(`${amount} ${unit} ${ingredient.name} toegevoegd`);
+    trackEvent(AnalyticsEvents.SHOPPING_ITEM_CHECKED, {
+      itemId: ingredient.id,
+      itemName: ingredient.name,
+      added: true,
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="px-4 py-6 w-full">
@@ -158,6 +170,21 @@ function ShoppingPageContent() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => setIsAddModalOpen(true)}
+            className="hidden sm:flex"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            Toevoegen
+          </Button>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="w-8 h-8 bg-[#4A90A4] text-white rounded-full flex items-center justify-center sm:hidden"
+            aria-label="Voeg ingrediënt toe"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
           <VoiceInputButton
             onSearch={handleVoiceSearch}
             size="sm"
@@ -321,6 +348,13 @@ function ShoppingPageContent() {
           </div>
         ))}
       </div>
+
+      {/* Add Ingredient Modal */}
+      <AddIngredientModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAdd={handleAddIngredient}
+      />
     </div>
     </PullToRefresh>
   );
