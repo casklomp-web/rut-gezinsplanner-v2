@@ -26,6 +26,8 @@ interface WeekState {
   swapMealBetweenDays: (sourceDayId: string, sourceMealType: "breakfast" | "lunch" | "dinner", targetDayId: string, targetMealType: "breakfast" | "lunch" | "dinner") => void;
   generateShoppingList: () => void;
   updateShoppingItem: (itemId: string, checked: boolean) => void;
+  addShoppingItem: (item: { name: string; amount: number; unit: string; estimatedPrice: number }) => void;
+  removeShoppingItem: (itemId: string) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   
@@ -263,6 +265,82 @@ export const useWeekStore = create<WeekState>()(
             }))
           }))
         };
+
+        set({
+          currentWeek: { ...week, shoppingList: updatedShoppingList, updatedAt: new Date() }
+        });
+      },
+
+      addShoppingItem: (item) => {
+        const week = get().currentWeek;
+        if (!week || !week.shoppingList) return;
+
+        const newItem = {
+          id: `manual_${Date.now()}`,
+          ingredientId: `manual_${Date.now()}`,
+          name: item.name,
+          amount: item.amount,
+          unit: item.unit,
+          displayText: `${item.name} (${item.amount} ${item.unit})`,
+          checked: false,
+          isFresh: false,
+          buyThisWeek: true,
+          estimatedPrice: item.estimatedPrice,
+        };
+
+        // Add to "other" store, "pantry" category
+        const updatedShoppingList: ShoppingList = {
+          ...week.shoppingList,
+          estimatedTotal: week.shoppingList.estimatedTotal + item.estimatedPrice,
+          byStore: week.shoppingList.byStore.map(store => {
+            if (store.store === 'other') {
+              return {
+                ...store,
+                subtotal: store.subtotal + item.estimatedPrice,
+                categories: store.categories.map(cat => {
+                  if (cat.category === 'pantry') {
+                    return {
+                      ...cat,
+                      items: [...cat.items, newItem],
+                    };
+                  }
+                  return cat;
+                }),
+              };
+            }
+            return store;
+          }),
+        };
+
+        set({
+          currentWeek: { ...week, shoppingList: updatedShoppingList, updatedAt: new Date() }
+        });
+      },
+
+      removeShoppingItem: (itemId: string) => {
+        const week = get().currentWeek;
+        if (!week || !week.shoppingList) return;
+
+        let removedPrice = 0;
+
+        const updatedShoppingList: ShoppingList = {
+          ...week.shoppingList,
+          byStore: week.shoppingList.byStore.map(store => ({
+            ...store,
+            categories: store.categories.map(cat => ({
+              ...cat,
+              items: cat.items.filter(item => {
+                if (item.id === itemId) {
+                  removedPrice = item.estimatedPrice;
+                  return false;
+                }
+                return true;
+              }),
+            })),
+          })),
+        };
+
+        updatedShoppingList.estimatedTotal = Math.max(0, updatedShoppingList.estimatedTotal - removedPrice);
 
         set({
           currentWeek: { ...week, shoppingList: updatedShoppingList, updatedAt: new Date() }

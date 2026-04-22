@@ -44,7 +44,7 @@ const categoryNames: Record<string, string> = {
 };
 
 function ShoppingPageContent() {
-  const { currentWeek, isLoading, generateShoppingList, updateShoppingItem } = useWeekStore();
+  const { currentWeek, isLoading, generateShoppingList, updateShoppingItem, addShoppingItem } = useWeekStore();
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -110,7 +110,15 @@ function ShoppingPageContent() {
   }, []);
 
   const handleAddIngredient = (ingredient: Ingredient, amount: number, unit: string) => {
-    // Add to shopping list - this would need to be implemented in the store
+    const estimatedPrice = ingredient.estimatedPrice * amount;
+    
+    addShoppingItem({
+      name: ingredient.name,
+      amount,
+      unit,
+      estimatedPrice,
+    });
+    
     toast.success(`${amount} ${unit} ${ingredient.name} toegevoegd`);
     trackEvent(AnalyticsEvents.SHOPPING_ITEM_CHECKED, {
       itemId: ingredient.id,
