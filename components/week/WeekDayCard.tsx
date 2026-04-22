@@ -1,12 +1,13 @@
 'use client';
 
 import { Day, MealInstance } from '@/lib/types';
-import { UtensilsCrossed, Dumbbell, Check } from 'lucide-react';
+import { UtensilsCrossed, Dumbbell, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { useWeekStore } from '@/lib/store/weekStore';
 import { useHaptic, HAPTIC_PATTERNS } from '@/components/providers/HapticProvider';
+import { toast } from '@/components/ui/Toast';
 
 interface WeekDayCardProps {
   day: Day;
@@ -14,7 +15,7 @@ interface WeekDayCardProps {
 }
 
 export function WeekDayCard({ day, onSelectMeal }: WeekDayCardProps) {
-  const { toggleMealComplete, toggleTrainingComplete } = useWeekStore();
+  const { toggleMealComplete, toggleTrainingComplete, swapMeal } = useWeekStore();
   const { vibrate } = useHaptic();
   const dayDate = parseISO(day.date);
   const isToday = day.date === new Date().toISOString().split('T')[0];
@@ -27,6 +28,14 @@ export function WeekDayCard({ day, onSelectMeal }: WeekDayCardProps) {
   const handleTrainingToggle = () => {
     vibrate(HAPTIC_PATTERNS.MEDIUM);
     toggleTrainingComplete(day.id);
+  };
+
+  const handleClearMeal = (mealType: 'breakfast' | 'lunch' | 'dinner', e: React.MouseEvent) => {
+    e.stopPropagation();
+    vibrate(HAPTIC_PATTERNS.MEDIUM);
+    // Clear the meal by swapping to an empty/default meal
+    swapMeal(day.id, mealType, 'empty_meal');
+    toast.success('Maaltijd verwijderd');
   };
 
   return (
@@ -63,18 +72,21 @@ export function WeekDayCard({ day, onSelectMeal }: WeekDayCardProps) {
           label="Ontbijt"
           onToggle={() => handleMealToggle('breakfast')}
           onSelect={onSelectMeal ? () => onSelectMeal(day.id, 'breakfast') : undefined}
+          onClear={(e) => handleClearMeal('breakfast', e)}
         />
         <MealRow
           meal={day.meals.lunch}
           label="Lunch"
           onToggle={() => handleMealToggle('lunch')}
           onSelect={onSelectMeal ? () => onSelectMeal(day.id, 'lunch') : undefined}
+          onClear={(e) => handleClearMeal('lunch', e)}
         />
         <MealRow
           meal={day.meals.dinner}
           label="Diner"
           onToggle={() => handleMealToggle('dinner')}
           onSelect={onSelectMeal ? () => onSelectMeal(day.id, 'dinner') : undefined}
+          onClear={(e) => handleClearMeal('dinner', e)}
         />
       </div>
 
@@ -116,11 +128,19 @@ interface MealRowProps {
   onSelect?: () => void;
 }
 
-function MealRow({ meal, label, onToggle, onSelect }: MealRowProps) {
+interface MealRowProps {
+  meal: MealInstance;
+  label: string;
+  onToggle: () => void;
+  onSelect?: () => void;
+  onClear?: (e: React.MouseEvent) => void;
+}
+
+function MealRow({ meal, label, onToggle, onSelect, onClear }: MealRowProps) {
   return (
     <div
       className={cn(
-        "w-full flex items-center gap-2 p-2 rounded-lg transition-colors",
+        "w-full flex items-center gap-2 p-2 rounded-lg transition-colors group",
         meal.completed
           ? "bg-gray-50"
           : "hover:bg-gray-50"
@@ -154,6 +174,17 @@ function MealRow({ meal, label, onToggle, onSelect }: MealRowProps) {
         </div>
         <span className="text-xs text-gray-400">{label}</span>
       </button>
+      {/* Clear button - only show on hover and if meal is not empty */}
+      {onClear && meal.mealName !== 'Leeg' && (
+        <button
+          onClick={onClear}
+          className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-all"
+          title="Verwijder maaltijd"
+          aria-label="Verwijder maaltijd"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 }

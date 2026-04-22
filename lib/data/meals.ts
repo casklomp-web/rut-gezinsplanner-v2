@@ -5,6 +5,25 @@
 import { Meal } from "@/lib/types";
 
 export const meals: Meal[] = [
+  // EMPTY MEAL (for clearing)
+  {
+    id: "empty_meal",
+    name: "Leeg",
+    category: "breakfast",
+    tags: [],
+    prepTime: 0,
+    cookTime: 0,
+    ingredients: [],
+    instructions: [],
+    variants: {},
+    nutrition: { calories: 0, protein: 0, carbs: 0, fat: 0 },
+    isFavorite: false,
+    frequency: "never",
+    isPrepFriendly: false,
+    keepsForDays: 0,
+    shoppingCategory: "pantry",
+    estimatedCost: 0
+  },
   // ONTBIJT
   {
     id: "meal_oats_banana",
