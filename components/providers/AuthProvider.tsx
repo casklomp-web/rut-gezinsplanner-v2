@@ -350,3 +350,10 @@ function AuthScreen({ onComplete }: { onComplete: () => void }) {
       </div>
     );
   }
+
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
