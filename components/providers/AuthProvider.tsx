@@ -76,19 +76,74 @@ export function AuthProvider({ children }: AuthProviderProps) {
 }
 
 function AuthScreen({ onComplete }: { onComplete: () => void }) {
-  const [step, setStep] = useState<'welcome' | 'create-family'>('welcome');
+  const [step, setStep] = useState<'welcome' | 'create-family' | 'add-members'>('welcome');
   const { addUser } = useUserStore();
   const [familyName, setFamilyName] = useState('');
   const [primaryUser, setPrimaryUser] = useState({ name: '', email: '' });
+  const [familyMembers, setFamilyMembers] = useState<string[]>([]);
+  const [newMemberName, setNewMemberName] = useState('');
 
   const handleCreateFamily = () => {
     if (familyName && primaryUser.name) {
-      // Create default family structure
+      setStep('add-members');
+    }
+  };
+
+  const handleAddMember = () => {
+    if (newMemberName.trim()) {
+      setFamilyMembers([...familyMembers, newMemberName.trim()]);
+      setNewMemberName('');
+    }
+  };
+
+  const handleFinishSetup = () => {
+    // Create primary user
+    addUser({
+      id: 'user_' + Date.now(),
+      name: primaryUser.name,
+      email: primaryUser.email,
+      role: 'primary',
+      goals: {
+        trainingDaysPerWeek: 3,
+        stepsTarget: 10000,
+      },
+      preferences: {
+        dietary: [],
+        dislikes: [],
+        allergies: [],
+        maxPrepTime: {
+          breakfast: 15,
+          lunch: 20,
+          dinner: 45,
+        },
+        budgetLevel: 'moderate',
+      },
+      schedule: {
+        trainingDays: ['monday', 'wednesday', 'friday'],
+        workBusyDays: [],
+      },
+      notifications: {
+        pushEnabled: false,
+        telegramEnabled: false,
+        reminders: {
+          breakfast: { enabled: false, time: '08:00' },
+          lunch: { enabled: false, time: '12:00' },
+          dinnerPrep: { enabled: false, time: '17:00' },
+          training: { enabled: false, time: '18:00' },
+          medication: { enabled: false, time: '09:00' },
+        },
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    // Add family members
+    familyMembers.forEach((memberName, index) => {
       addUser({
-        id: 'user_' + Date.now(),
-        name: primaryUser.name,
-        email: primaryUser.email,
-        role: 'primary',
+        id: 'user_' + (Date.now() + index + 1),
+        name: memberName,
+        email: '',
+        role: 'member',
         goals: {
           trainingDaysPerWeek: 3,
           stepsTarget: 10000,
@@ -105,7 +160,7 @@ function AuthScreen({ onComplete }: { onComplete: () => void }) {
           budgetLevel: 'moderate',
         },
         schedule: {
-          trainingDays: ['monday', 'wednesday', 'friday'],
+          trainingDays: [],
           workBusyDays: [],
         },
         notifications: {
@@ -122,8 +177,9 @@ function AuthScreen({ onComplete }: { onComplete: () => void }) {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      onComplete();
-    }
+    });
+
+    onComplete();
   };
 
   if (step === 'welcome') {
@@ -217,11 +273,80 @@ function AuthScreen({ onComplete }: { onComplete: () => void }) {
             className="w-full py-4 text-lg mt-4"
             disabled={!familyName || !primaryUser.name}
           >
-            Gezin aanmaken
+            Volgende
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
         </div>
       </div>
     </div>
   );
-}
+
+  if (step === 'add-members') {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#4A90A4]/10 via-[#4A90A4]/5 to-white flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          <button 
+            onClick={() => setStep('create-family')}
+            className="text-sm text-[#4A90A4] mb-4"
+          >
+            ← Terug
+          </button>
+          
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Gezinsleden toevoegen</h2>
+          <p className="text-gray-600 mb-6">
+            Voeg andere gezinsleden toe aan {familyName}.
+          </p>
+          
+          {/* Primary user */}
+          <div className="bg-[#4A90A4]/10 rounded-xl p-4 mb-4">
+            <p className="font-medium text-gray-800">{primaryUser.name}</p>
+            <p className="text-sm text-gray-500">Beheerder</p>
+          </div>
+
+          {/* Family members list */}
+          {familyMembers.length > 0 && (
+            <div className="space-y-2 mb-4">
+              {familyMembers.map((member, index) => (
+                <div key={index} className="bg-gray-100 rounded-xl p-3 flex items-center justify-between">
+                  <span className="text-gray-800">{member}</span>
+                  <button
+                    onClick={() => setFamilyMembers(familyMembers.filter((_, i) => i !== index))}
+                    className="text-red-500 text-sm"
+                  >
+                    Verwijder
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Add member input */}
+          <div className="flex gap-2 mb-6">
+            <input
+              type="text"
+              value={newMemberName}
+              onChange={(e) => setNewMemberName(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleAddMember()}
+              className="flex-1 px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4A90A4]"
+              placeholder="Naam gezinslid"
+            />
+            <Button
+              onClick={handleAddMember}
+              disabled={!newMemberName.trim()}
+              variant="outline"
+            >
+              Toevoegen
+            </Button>
+          </div>
+          
+          <Button 
+            onClick={handleFinishSetup}
+            className="w-full py-4 text-lg"
+          >
+            {familyMembers.length > 0 ? `Start met ${familyMembers.length + 1} gezinsleden` : 'Start alleen'}
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </Button>
+        </div>
+      </div>
+    );
+  }

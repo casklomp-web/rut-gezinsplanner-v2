@@ -107,12 +107,16 @@ function WeekPageContent() {
               variant="outline" 
               size="sm"
               onClick={() => {
-                generateNewWeek();
-                trackEvent(AnalyticsEvents.WEEK_GENERATED);
+                if (confirm('Weet je zeker dat je een nieuwe week wilt genereren? De huidige week wordt opgeslagen in je geschiedenis.')) {
+                  generateNewWeek();
+                  trackEvent(AnalyticsEvents.WEEK_GENERATED);
+                  toast.success('Nieuwe week gegenereerd');
+                }
               }}
+              title="Genereer nieuwe week"
             >
               <RefreshCw size={16} className="mr-1" />
-              Nieuw
+              Nieuwe week
             </Button>
           </div>
         </div>

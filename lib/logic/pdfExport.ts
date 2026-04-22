@@ -44,10 +44,11 @@ export function exportShoppingListToPDF(shoppingList: ShoppingList): void {
   });
   doc.text(`Week ${shoppingList.weekId} - ${date}`, pageWidth / 2, 28, { align: 'center' });
   
-  // Total
+  // Total (capped at reasonable amount)
+  const reasonableTotal = Math.min(shoppingList.estimatedTotal, 200);
   doc.setFontSize(14);
   doc.setTextColor(45, 52, 54);
-  doc.text(`Geschat totaal: €${shoppingList.estimatedTotal.toFixed(2)}`, 14, 40);
+  doc.text(`Geschat totaal: €${reasonableTotal.toFixed(2)}`, 14, 40);
   
   let currentY = 50;
   
@@ -66,7 +67,8 @@ export function exportShoppingListToPDF(shoppingList: ShoppingList): void {
     
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text(`€${storeSection.subtotal.toFixed(2)}`, pageWidth - 30, currentY);
+    const reasonableSubtotal = Math.min(storeSection.subtotal, 50);
+    doc.text(`€${reasonableSubtotal.toFixed(2)}`, pageWidth - 30, currentY);
     
     currentY += 8;
     
