@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Filter, Search, Clock, AlertCircle, RotateCcw } from 'lucide-react';
+import { Plus, Filter, Search, Clock, AlertCircle, RotateCcw, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { TaskCard } from './TaskCard';
