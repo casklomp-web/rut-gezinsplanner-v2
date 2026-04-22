@@ -32,14 +32,14 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#4A90A4]/10 via-[#4A90A4]/5 to-white">
       <div className="max-w-md mx-auto px-6 py-12 lg:max-w-2xl">
-        {/* Header */}
+        {/* Header with animation */}
         <div className="text-center mb-12 pt-8">
-          <div className="w-20 h-20 bg-[#4A90A4] rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
-            <ChefHat className="w-10 h-10 text-white" />
+          <div className="w-20 h-20 bg-[#4A90A4] rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg animate-bounce-in">
+            <ChefHat className="w-10 h-10 text-white animate-pulse-slow" />
           </div>
-          <h1 className="text-5xl font-bold text-[#4A90A4] mb-3">Rut</h1>
-          <p className="text-xl text-gray-600 mb-2">Gezinsplanner</p>
-          <p className="text-gray-400">Eenvoudig gezond eten plannen voor het hele gezin</p>
+          <h1 className="text-5xl font-bold text-[#4A90A4] mb-3 animate-fade-in">Rut</h1>
+          <p className="text-xl text-gray-600 mb-2 animate-fade-in-delay">Gezinsplanner</p>
+          <p className="text-gray-400 animate-fade-in-delay-2">Eenvoudig gezond eten plannen voor het hele gezin</p>
         </div>
 
         {/* Features */}
