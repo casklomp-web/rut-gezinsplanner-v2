@@ -84,8 +84,11 @@ function AuthScreen({ onComplete }: { onComplete: () => void }) {
   const [newMemberName, setNewMemberName] = useState('');
 
   const handleCreateFamily = () => {
+    console.log('handleCreateFamily called', { familyName, primaryUser: primaryUser.name });
     if (familyName && primaryUser.name) {
       setStep('add-members');
+    } else {
+      console.log('Button disabled - missing data');
     }
   };
 
@@ -270,8 +273,10 @@ function AuthScreen({ onComplete }: { onComplete: () => void }) {
           
           <Button 
             onClick={handleCreateFamily}
+            onTouchStart={handleCreateFamily}
             className="w-full py-4 text-lg mt-4"
             disabled={!familyName || !primaryUser.name}
+            type="button"
           >
             Volgende
             <ArrowRight className="w-5 h-5 ml-2" />
