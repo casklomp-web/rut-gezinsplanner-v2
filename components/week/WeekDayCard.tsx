@@ -1,7 +1,7 @@
 'use client';
 
 import { Day, MealInstance } from '@/lib/types';
-import { UtensilsCrossed, Dumbbell, Check, X } from 'lucide-react';
+import { UtensilsCrossed, Dumbbell, Check, X, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -137,13 +137,17 @@ interface MealRowProps {
 }
 
 function MealRow({ meal, label, onToggle, onSelect, onClear }: MealRowProps) {
+  const isEmpty = meal.mealName === 'Leeg';
+  
   return (
     <div
       className={cn(
-        "w-full flex items-center gap-2 p-2 rounded-lg transition-colors group",
+        "w-full flex items-center gap-2 p-2 rounded-lg transition-all group border-2",
         meal.completed
-          ? "bg-gray-50"
-          : "hover:bg-gray-50"
+          ? "bg-gray-50 border-transparent"
+          : isEmpty 
+            ? "bg-gray-50 border-dashed border-gray-200 hover:border-[#4A90A4]/50"
+            : "bg-white border-transparent hover:border-[#4A90A4]/30 hover:shadow-sm"
       )}
     >
       <button
@@ -165,17 +169,28 @@ function MealRow({ meal, label, onToggle, onSelect, onClear }: MealRowProps) {
         className="flex-1 flex items-center gap-2 text-left min-w-0"
       >
         <div className="flex-1 min-w-0">
-          <p className={cn(
-            "text-sm truncate",
-            meal.completed ? "text-gray-400 line-through" : "text-[#2D3436]"
-          )}>
-            {meal.mealName}
-          </p>
+          {isEmpty ? (
+            <p className="text-sm text-gray-400 italic">
+              Klik om {label.toLowerCase()} toe te voegen...
+            </p>
+          ) : (
+            <p className={cn(
+              "text-sm truncate",
+              meal.completed ? "text-gray-400 line-through" : "text-[#2D3436]"
+            )}>
+              {meal.mealName}
+            </p>
+          )}
         </div>
-        <span className="text-xs text-gray-400">{label}</span>
+        {!isEmpty && (
+          <span className="text-xs text-gray-400">{label}</span>
+        )}
+        {isEmpty && (
+          <ChevronRight className="w-4 h-4 text-gray-300" />
+        )}
       </button>
       {/* Clear button - only show on hover and if meal is not empty */}
-      {onClear && meal.mealName !== 'Leeg' && (
+      {onClear && !isEmpty && (
         <button
           onClick={onClear}
           className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-all"
