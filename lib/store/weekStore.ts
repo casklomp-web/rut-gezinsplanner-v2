@@ -44,9 +44,12 @@ export const useWeekStore = create<WeekState>()(
       
       generateNewWeek: () => {
         const primaryUser = useUserStore.getState().getPrimaryUser();
-        if (!primaryUser) return;
+        if (!primaryUser) {
+          set({ error: 'Geen gebruiker gevonden', isLoading: false });
+          return;
+        }
         
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         
         try {
           const newWeek = generateWeek(new Date(), primaryUser);
@@ -56,10 +59,15 @@ export const useWeekStore = create<WeekState>()(
             weekHistory: state.currentWeek 
               ? [state.currentWeek, ...state.weekHistory].slice(0, 4)
               : state.weekHistory,
-            isLoading: false
+            isLoading: false,
+            error: null
           }));
         } catch (error) {
-          set({ error: 'Failed to generate week', isLoading: false });
+          console.error('Week generation error:', error);
+          set({ 
+            error: error instanceof Error ? error.message : 'Kon week niet genereren', 
+            isLoading: false 
+          });
         }
       },
       

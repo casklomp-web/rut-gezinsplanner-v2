@@ -16,7 +16,7 @@ import { PullToRefresh } from "@/components/ui/Swipeable";
 import { useOffline } from "@/components/providers/OfflineProvider";
 import { isFeatureEnabled } from "@/components/providers/FeatureProvider";
 import { trackEvent, AnalyticsEvents } from "@/components/providers/FeatureProvider";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { SocialShareButtons } from "@/components/features/SocialShareButtons";
 import { MealPrepIndicator } from "@/components/features/MealPrepIndicator";
 import { NutritionPanel } from "@/components/features/NutritionPanel";
@@ -25,13 +25,22 @@ import { useUserStore } from "@/lib/store/userStore";
 import { meals as defaultMeals } from "@/lib/data/meals";
 
 function WeekPageContent() {
-  const { currentWeek, generateNewWeek, generateShoppingList, isLoading } = useWeekStore();
+  const { currentWeek, generateNewWeek, generateShoppingList, isLoading, error } = useWeekStore();
   const { currentUser } = useUserStore();
   const { triggerSync } = useOffline();
   const [showCollaborative, setShowCollaborative] = useState(false);
   const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
   const [modalDayId, setModalDayId] = useState<string | undefined>(undefined);
   const [modalMealType, setModalMealType] = useState<MealType | undefined>(undefined);
+  const [hasTriedGenerate, setHasTriedGenerate] = useState(false);
+
+  // Auto-generate week if none exists
+  useEffect(() => {
+    if (!currentWeek && !isLoading && !hasTriedGenerate) {
+      setHasTriedGenerate(true);
+      generateNewWeek();
+    }
+  }, [currentWeek, isLoading, hasTriedGenerate, generateNewWeek]);
 
   const handleRefresh = async () => {
     await triggerSync();
@@ -54,12 +63,12 @@ function WeekPageContent() {
       <div className="px-4 py-6 w-full">
         <EmptyState
           icon={CalendarDays}
-          title="Geen week gepland"
-          description="Genereer een week om je maaltijdplanning te zien"
+          title={error ? "Fout bij laden" : "Geen week gepland"}
+          description={error || "Genereer een week om je maaltijdplanning te zien"}
           action={
             <Button onClick={generateNewWeek}>
               <RefreshCw className="w-4 h-4 mr-2" />
-              Week genereren
+              {error ? "Opnieuw proberen" : "Week genereren"}
             </Button>
           }
         />
