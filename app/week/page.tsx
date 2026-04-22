@@ -133,13 +133,19 @@ function WeekPageContent() {
         />
 
         {/* Collaborative Toggle */}
-        <button
-          onClick={() => setShowCollaborative(!showCollaborative)}
-          className="flex items-center gap-2 mb-4 text-sm text-[#4A90A4] hover:text-[#3a7a8c]"
-        >
-          <Share2 className="w-4 h-4" />
-          {showCollaborative ? 'Verberg samenwerking' : 'Toon samenwerking'}
-        </button>
+        <div className="flex items-center gap-2 mb-4">
+          <button
+            onClick={() => setShowCollaborative(!showCollaborative)}
+            className="w-10 h-10 rounded-full bg-[#4A90A4]/10 text-[#4A90A4] hover:bg-[#4A90A4]/20 flex items-center justify-center transition-colors"
+            title={showCollaborative ? 'Verberg wie wat doet' : 'Toon wie wat doet'}
+            aria-label={showCollaborative ? 'Verberg samenwerking' : 'Toon samenwerking'}
+          >
+            <Share2 className="w-5 h-5" />
+          </button>
+          <span className="text-sm text-gray-600">
+            {showCollaborative ? 'Samenwerking zichtbaar' : 'Samenwerking'}
+          </span>
+        </div>
 
         {/* Collaborative Status */}
         {showCollaborative && currentUser && (

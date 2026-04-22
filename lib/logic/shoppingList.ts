@@ -82,15 +82,25 @@ export function generateShoppingList(week: Week): ShoppingList {
     const ingredient = ingredients.find(i => i.id === ingredientId);
     if (!ingredient) return;
     
-    // Bereken prijs
+    // Bereken prijs (veilig)
     let price = ingredient.estimatedPrice;
+    
+    // Alleen converteren als eenheden logisch zijn
     if (data.unit === "g" && ingredient.priceUnit === "kg") {
       price = (data.amount / 1000) * ingredient.estimatedPrice;
     } else if (data.unit === "ml" && ingredient.priceUnit === "liter") {
       price = (data.amount / 1000) * ingredient.estimatedPrice;
-    } else {
+    } else if (data.unit === ingredient.priceUnit) {
+      // Zelfde eenheid: direct vermenigvuldigen
       price = data.amount * ingredient.estimatedPrice;
+    } else {
+      // Verschillende eenheden: gebruik geschatte prijs als basis
+      // en voeg een kleine multiplier toe voor hoeveelheid
+      price = ingredient.estimatedPrice * Math.min(data.amount, 5);
     }
+    
+    // Cap prijs op €50 per item (veiligheidsmaatregel)
+    price = Math.min(price, 50);
     
     totalCost += price;
     
