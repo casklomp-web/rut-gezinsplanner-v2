@@ -111,6 +111,7 @@ export function DraggableWeekPlanner({ days, onSelectMeal }: DraggableWeekPlanne
             day={day}
             onToggleMeal={toggleMealComplete}
             onToggleTraining={toggleTrainingComplete}
+            onSelectMeal={onSelectMeal}
           />
         ))}
       </div>
@@ -133,9 +134,10 @@ interface DroppableDayCardProps {
   day: Day;
   onToggleMeal: (dayId: string, mealType: MealType) => void;
   onToggleTraining: (dayId: string) => void;
+  onSelectMeal?: (dayId: string, mealType: MealType) => void;
 }
 
-function DroppableDayCard({ day, onToggleMeal, onToggleTraining }: DroppableDayCardProps) {
+function DroppableDayCard({ day, onToggleMeal, onToggleTraining, onSelectMeal }: DroppableDayCardProps) {
   const dayDate = parseISO(day.date);
   const isToday = day.date === new Date().toISOString().split('T')[0];
   const { vibrate } = useHaptic();
