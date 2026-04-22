@@ -4,7 +4,7 @@ import { useWeekStore } from "@/lib/store/weekStore";
 import { ShoppingListSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/ErrorBoundary";
 import { Button } from "@/components/ui/Button";
-import { Check, Copy, ShoppingCart, CalendarDays, FileDown, Trash2, Scan } from "lucide-react";
+import { Check, Copy, ShoppingCart, CalendarDays, FileDown, Trash2 } from "lucide-react";
 import { useState, useCallback } from "react";
 import { exportShoppingListAsText } from "@/lib/logic/shoppingList";
 import { exportShoppingListToPDF } from "@/lib/logic/pdfExport";
@@ -16,11 +16,9 @@ import { isFeatureEnabled } from "@/components/providers/FeatureProvider";
 import { trackEvent, AnalyticsEvents } from "@/components/providers/FeatureProvider";
 import { useOffline } from "@/components/providers/OfflineProvider";
 import { Suspense } from "react";
-import { BarcodeScanner } from "@/components/features/BarcodeScanner";
 import { PriceComparison } from "@/components/features/PriceComparison";
 import { VoiceInputButton } from "@/components/features/VoiceInputButton";
 import { ShoppingItem } from "@/lib/types";
-import { createShoppingItemFromProduct } from "@/lib/features/barcodeScanner";
 
 const storeNames: Record<string, string> = {
   aldi: "ALDI",
@@ -103,11 +101,6 @@ function ShoppingPageContent() {
     setCheckedItems(new Set());
     toast.success('Alle items vrijgegeven');
   };
-
-  const handleAddScannedItem = useCallback((item: ShoppingItem) => {
-    // In a real implementation, this would add to the shopping list
-    toast.success(`${item.name} toegevoegd aan lijst`);
-  }, []);
 
   const handleVoiceSearch = useCallback((query: string) => {
     toast.info(`Zoeken naar: ${query}`);
@@ -213,14 +206,6 @@ function ShoppingPageContent() {
             </button>
           )}
         </div>
-      </div>
-
-      {/* Barcode Scanner & Price Comparison */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <BarcodeScanner
-          weekId={currentWeek?.id || ''}
-          onAddItem={handleAddScannedItem}
-        />
       </div>
 
       {/* Price Comparison */}
