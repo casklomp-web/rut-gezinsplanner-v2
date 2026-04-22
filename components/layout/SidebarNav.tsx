@@ -6,7 +6,7 @@ import { Home, Calendar, ShoppingCart, ChefHat, ClipboardList, User } from "luci
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/today", label: "Vandaag", icon: Home },
+  { href: "/", label: "Vandaag", icon: Home },
   { href: "/week", label: "Week", icon: Calendar },
   { href: "/tasks", label: "Taken", icon: ClipboardList },
   { href: "/shopping", label: "Boodschappen", icon: ShoppingCart },
