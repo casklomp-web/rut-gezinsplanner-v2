@@ -18,7 +18,6 @@ const nextConfig = {
     // Tree shaking voor lodash-achtige libs
     config.optimization = {
       ...config.optimization,
-      usedExports: true,
       sideEffects: false,
       minimize: true,
     };

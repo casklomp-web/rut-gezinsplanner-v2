@@ -10,9 +10,10 @@ import { useHaptic, HAPTIC_PATTERNS } from '@/components/providers/HapticProvide
 
 interface WeekDayCardProps {
   day: Day;
+  onSelectMeal?: (dayId: string, mealType: 'breakfast' | 'lunch' | 'dinner') => void;
 }
 
-export function WeekDayCard({ day }: WeekDayCardProps) {
+export function WeekDayCard({ day, onSelectMeal }: WeekDayCardProps) {
   const { toggleMealComplete, toggleTrainingComplete } = useWeekStore();
   const { vibrate } = useHaptic();
   const dayDate = parseISO(day.date);
@@ -61,16 +62,19 @@ export function WeekDayCard({ day }: WeekDayCardProps) {
           meal={day.meals.breakfast}
           label="Ontbijt"
           onToggle={() => handleMealToggle('breakfast')}
+          onSelect={onSelectMeal ? () => onSelectMeal(day.id, 'breakfast') : undefined}
         />
         <MealRow
           meal={day.meals.lunch}
           label="Lunch"
           onToggle={() => handleMealToggle('lunch')}
+          onSelect={onSelectMeal ? () => onSelectMeal(day.id, 'lunch') : undefined}
         />
         <MealRow
           meal={day.meals.dinner}
           label="Diner"
           onToggle={() => handleMealToggle('dinner')}
+          onSelect={onSelectMeal ? () => onSelectMeal(day.id, 'dinner') : undefined}
         />
       </div>
 
@@ -101,37 +105,47 @@ interface MealRowProps {
   meal: MealInstance;
   label: string;
   onToggle: () => void;
+  onSelect?: () => void;
 }
 
-function MealRow({ meal, label, onToggle }: MealRowProps) {
+function MealRow({ meal, label, onToggle, onSelect }: MealRowProps) {
   return (
-    <button
-      onClick={onToggle}
+    <div
       className={cn(
-        "w-full flex items-center gap-2 p-2 rounded-lg transition-colors text-left",
+        "w-full flex items-center gap-2 p-2 rounded-lg transition-colors",
         meal.completed
           ? "bg-gray-50"
           : "hover:bg-gray-50"
       )}
-      aria-pressed={meal.completed}
     >
-      <div className={cn(
-        "w-5 h-5 rounded border flex items-center justify-center transition-colors flex-shrink-0",
-        meal.completed
-          ? "bg-[#7CB342] border-[#7CB342]"
-          : "border-gray-300"
-      )}>
-        {meal.completed && <Check className="w-3 h-3 text-white" />}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className={cn(
-          "text-sm truncate",
-          meal.completed ? "text-gray-400 line-through" : "text-[#2D3436]"
+      <button
+        onClick={onToggle}
+        className="flex items-center gap-2 text-left"
+        aria-pressed={meal.completed}
+      >
+        <div className={cn(
+          "w-5 h-5 rounded border flex items-center justify-center transition-colors flex-shrink-0",
+          meal.completed
+            ? "bg-[#7CB342] border-[#7CB342]"
+            : "border-gray-300"
         )}>
-          {meal.mealName}
-        </p>
-      </div>
-      <span className="text-xs text-gray-400">{label}</span>
-    </button>
+          {meal.completed && <Check className="w-3 h-3 text-white" />}
+        </div>
+      </button>
+      <button
+        onClick={onSelect}
+        className="flex-1 flex items-center gap-2 text-left min-w-0"
+      >
+        <div className="flex-1 min-w-0">
+          <p className={cn(
+            "text-sm truncate",
+            meal.completed ? "text-gray-400 line-through" : "text-[#2D3436]"
+          )}>
+            {meal.mealName}
+          </p>
+        </div>
+        <span className="text-xs text-gray-400">{label}</span>
+      </button>
+    </div>
   );
 }

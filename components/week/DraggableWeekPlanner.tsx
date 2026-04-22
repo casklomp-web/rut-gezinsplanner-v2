@@ -29,6 +29,7 @@ import { trackEvent, AnalyticsEvents } from '@/components/providers/FeatureProvi
 
 interface DraggableWeekPlannerProps {
   days: Day[];
+  onSelectMeal?: (dayId: string, mealType: MealType) => void;
 }
 
 interface DragData {
@@ -37,7 +38,7 @@ interface DragData {
   mealName: string;
 }
 
-export function DraggableWeekPlanner({ days }: DraggableWeekPlannerProps) {
+export function DraggableWeekPlanner({ days, onSelectMeal }: DraggableWeekPlannerProps) {
   const [activeDrag, setActiveDrag] = useState<DragData | null>(null);
   const { toggleMealComplete, toggleTrainingComplete, swapMealBetweenDays } = useWeekStore();
   const { vibrate } = useHaptic();
@@ -177,6 +178,7 @@ function DroppableDayCard({ day, onToggleMeal, onToggleTraining }: DroppableDayC
             vibrate(HAPTIC_PATTERNS.LIGHT);
             onToggleMeal(day.id, 'breakfast');
           }}
+          onSelect={onSelectMeal ? () => onSelectMeal(day.id, 'breakfast') : undefined}
         />
         <DraggableMealRow
           dayId={day.id}
@@ -187,6 +189,7 @@ function DroppableDayCard({ day, onToggleMeal, onToggleTraining }: DroppableDayC
             vibrate(HAPTIC_PATTERNS.LIGHT);
             onToggleMeal(day.id, 'lunch');
           }}
+          onSelect={onSelectMeal ? () => onSelectMeal(day.id, 'lunch') : undefined}
         />
         <DraggableMealRow
           dayId={day.id}
@@ -197,6 +200,7 @@ function DroppableDayCard({ day, onToggleMeal, onToggleTraining }: DroppableDayC
             vibrate(HAPTIC_PATTERNS.LIGHT);
             onToggleMeal(day.id, 'dinner');
           }}
+          onSelect={onSelectMeal ? () => onSelectMeal(day.id, 'dinner') : undefined}
         />
       </div>
 
@@ -233,9 +237,10 @@ interface DraggableMealRowProps {
   mealType: MealType;
   label: string;
   onToggle: () => void;
+  onSelect?: () => void;
 }
 
-function DraggableMealRow({ dayId, meal, mealType, label, onToggle }: DraggableMealRowProps) {
+function DraggableMealRow({ dayId, meal, mealType, label, onToggle, onSelect }: DraggableMealRowProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `${dayId}-${mealType}`,
     data: { dayId, mealType, mealName: meal.mealName } as DragData,
@@ -279,7 +284,7 @@ function DraggableMealRow({ dayId, meal, mealType, label, onToggle }: DraggableM
         )}
         <button
           onClick={onToggle}
-          className="flex-1 flex items-center gap-2 text-left"
+          className="flex items-center gap-2 text-left"
           aria-pressed={meal.completed}
         >
           <div className={cn(
@@ -290,6 +295,11 @@ function DraggableMealRow({ dayId, meal, mealType, label, onToggle }: DraggableM
           )}>
             {meal.completed && <Check className="w-3 h-3 text-white" />}
           </div>
+        </button>
+        <button
+          onClick={onSelect}
+          className="flex-1 flex items-center gap-2 text-left min-w-0"
+        >
           <div className="flex-1 min-w-0">
             <p className={cn(
               "text-sm truncate",

@@ -4,7 +4,9 @@ import { useWeekStore } from "@/lib/store/weekStore";
 import { WeekViewSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/ErrorBoundary";
 import { Button } from "@/components/ui/Button";
-import { RefreshCw, ShoppingCart, CalendarDays, Share2, ChefHat } from "lucide-react";
+import { RefreshCw, ShoppingCart, CalendarDays, Share2, ChefHat, Plus } from "lucide-react";
+import { RecipeSelectionModal } from "@/components/recipes/RecipeSelectionModal";
+import { MealType } from "@/lib/types";
 import { format, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 import { WeekDayCard } from "@/components/week/WeekDayCard";
@@ -27,6 +29,9 @@ function WeekPageContent() {
   const { currentUser } = useUserStore();
   const { triggerSync } = useOffline();
   const [showCollaborative, setShowCollaborative] = useState(false);
+  const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
+  const [modalDayId, setModalDayId] = useState<string | undefined>(undefined);
+  const [modalMealType, setModalMealType] = useState<MealType | undefined>(undefined);
 
   const handleRefresh = async () => {
     await triggerSync();
@@ -136,16 +141,53 @@ function WeekPageContent() {
           />
         )}
 
+        {/* Add meal button */}
+        <Button
+          variant="outline"
+          className="w-full mb-4"
+          onClick={() => {
+            setModalDayId(undefined);
+            setModalMealType(undefined);
+            setIsRecipeModalOpen(true);
+          }}
+        >
+          <Plus size={18} className="mr-2" />
+          Kies zelf een recept
+        </Button>
+
         {/* Week overzicht */}
         {isFeatureEnabled('ENABLE_DRAG_DROP') ? (
-          <DraggableWeekPlanner days={currentWeek.days} />
+          <DraggableWeekPlanner 
+            days={currentWeek.days} 
+            onSelectMeal={(dayId, mealType) => {
+              setModalDayId(dayId);
+              setModalMealType(mealType);
+              setIsRecipeModalOpen(true);
+            }}
+          />
         ) : (
           <div className="space-y-3">
             {currentWeek.days.map((day) => (
-              <WeekDayCard key={day.id} day={day} />
+              <WeekDayCard 
+                key={day.id} 
+                day={day}
+                onSelectMeal={(dayId, mealType) => {
+                  setModalDayId(dayId);
+                  setModalMealType(mealType);
+                  setIsRecipeModalOpen(true);
+                }}
+              />
             ))}
           </div>
         )}
+
+        {/* Recipe Selection Modal */}
+        <RecipeSelectionModal
+          isOpen={isRecipeModalOpen}
+          onClose={() => setIsRecipeModalOpen(false)}
+          preselectedDayId={modalDayId}
+          preselectedMealType={modalMealType}
+        />
 
         {/* Boodschappen knop */}
         <Button 
