@@ -11,19 +11,22 @@ import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { useHaptic, HAPTIC_PATTERNS } from "@/components/providers/HapticProvider";
 import { trackEvent, AnalyticsEvents } from "@/components/providers/FeatureProvider";
 import { cn } from "@/lib/utils";
-import { Day } from "@/lib/types";
+import { Day, MealType } from "@/lib/types";
 import { CalendarDays, Sparkles, ChevronLeft, ChevronRight, Mic, ChefHat } from "lucide-react";
 import { NutritionPanel } from "@/components/features/NutritionPanel";
 import { VoiceInputButton } from "@/components/features/VoiceInputButton";
 import { MealPrepIndicator, PrepDayBadge } from "@/components/features/MealPrepIndicator";
 import { meals as defaultMeals } from "@/lib/data/meals";
 import { useUserStore } from "@/lib/store/userStore";
+import { RecipeSelectionModal } from "@/components/recipes/RecipeSelectionModal";
 
 // Day view component
 function DayView({ day }: { day: Day }) {
   const { toggleMealComplete, toggleTrainingComplete, toggleCheckin } = useWeekStore();
   const { vibrate } = useHaptic();
-  
+  const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
+  const [selectedMealType, setSelectedMealType] = useState<MealType | null>(null);
+
   if (!day) return null;
 
   const dayDate = parseISO(day.date);
@@ -36,6 +39,11 @@ function DayView({ day }: { day: Day }) {
       mealType,
       mealName: day.meals[mealType].mealName,
     });
+  };
+
+  const handleMealClick = (mealType: MealType) => {
+    setSelectedMealType(mealType);
+    setIsRecipeModalOpen(true);
   };
 
   const handleTrainingToggle = () => {
@@ -70,18 +78,19 @@ function DayView({ day }: { day: Day }) {
       {/* Meals */}
       <div className="space-y-3">
         {/* Breakfast */}
-        <button
-          onClick={() => handleMealToggle('breakfast')}
+        <div
           className={cn(
-            "w-full bg-white dark:bg-gray-800 rounded-xl p-4 border-2 transition-all text-left",
+            "w-full bg-white dark:bg-gray-800 rounded-xl p-4 border-2 transition-all",
             day.meals.breakfast.completed
               ? "border-[#7CB342] bg-[#7CB342]/5"
               : "border-transparent hover:border-[#4A90A4]/30"
           )}
-          aria-pressed={day.meals.breakfast.completed}
         >
           <div className="flex items-center justify-between">
-            <div>
+            <button
+              onClick={() => handleMealClick('breakfast')}
+              className="flex-1 text-left"
+            >
               <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Ontbijt</p>
               <p className={cn(
                 "font-medium dark:text-gray-200",
@@ -89,35 +98,41 @@ function DayView({ day }: { day: Day }) {
               )}>
                 {day.meals.breakfast.mealName}
               </p>
-            </div>
-            <div className={cn(
-              "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
-              day.meals.breakfast.completed
-                ? "bg-[#7CB342] border-[#7CB342]"
-                : "border-gray-300 dark:border-gray-600"
-            )}>
+            </button>
+            <button
+              onClick={() => handleMealToggle('breakfast')}
+              className={cn(
+                "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors flex-shrink-0 ml-2",
+                day.meals.breakfast.completed
+                  ? "bg-[#7CB342] border-[#7CB342]"
+                  : "border-gray-300 dark:border-gray-600"
+              )}
+              aria-pressed={day.meals.breakfast.completed}
+              aria-label="Markeer als voltooid"
+            >
               {day.meals.breakfast.completed && (
                 <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               )}
-            </div>
+            </button>
           </div>
-        </button>
+        </div>
 
         {/* Lunch */}
-        <button
-          onClick={() => handleMealToggle('lunch')}
+        <div
           className={cn(
-            "w-full bg-white dark:bg-gray-800 rounded-xl p-4 border-2 transition-all text-left",
+            "w-full bg-white dark:bg-gray-800 rounded-xl p-4 border-2 transition-all",
             day.meals.lunch.completed
               ? "border-[#7CB342] bg-[#7CB342]/5"
               : "border-transparent hover:border-[#4A90A4]/30"
           )}
-          aria-pressed={day.meals.lunch.completed}
         >
           <div className="flex items-center justify-between">
-            <div>
+            <button
+              onClick={() => handleMealClick('lunch')}
+              className="flex-1 text-left"
+            >
               <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Lunch</p>
               <p className={cn(
                 "font-medium dark:text-gray-200",
@@ -125,35 +140,41 @@ function DayView({ day }: { day: Day }) {
               )}>
                 {day.meals.lunch.mealName}
               </p>
-            </div>
-            <div className={cn(
-              "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
-              day.meals.lunch.completed
-                ? "bg-[#7CB342] border-[#7CB342]"
-                : "border-gray-300 dark:border-gray-600"
-            )}>
+            </button>
+            <button
+              onClick={() => handleMealToggle('lunch')}
+              className={cn(
+                "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors flex-shrink-0 ml-2",
+                day.meals.lunch.completed
+                  ? "bg-[#7CB342] border-[#7CB342]"
+                  : "border-gray-300 dark:border-gray-600"
+              )}
+              aria-pressed={day.meals.lunch.completed}
+              aria-label="Markeer als voltooid"
+            >
               {day.meals.lunch.completed && (
                 <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               )}
-            </div>
+            </button>
           </div>
-        </button>
+        </div>
 
         {/* Dinner */}
-        <button
-          onClick={() => handleMealToggle('dinner')}
+        <div
           className={cn(
-            "w-full bg-white dark:bg-gray-800 rounded-xl p-4 border-2 transition-all text-left",
+            "w-full bg-white dark:bg-gray-800 rounded-xl p-4 border-2 transition-all",
             day.meals.dinner.completed
               ? "border-[#7CB342] bg-[#7CB342]/5"
               : "border-transparent hover:border-[#4A90A4]/30"
           )}
-          aria-pressed={day.meals.dinner.completed}
         >
           <div className="flex items-center justify-between">
-            <div>
+            <button
+              onClick={() => handleMealClick('dinner')}
+              className="flex-1 text-left"
+            >
               <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Diner</p>
               <p className={cn(
                 "font-medium dark:text-gray-200",
@@ -161,21 +182,26 @@ function DayView({ day }: { day: Day }) {
               )}>
                 {day.meals.dinner.mealName}
               </p>
-            </div>
-            <div className={cn(
-              "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
-              day.meals.dinner.completed
-                ? "bg-[#7CB342] border-[#7CB342]"
-                : "border-gray-300 dark:border-gray-600"
-            )}>
+            </button>
+            <button
+              onClick={() => handleMealToggle('dinner')}
+              className={cn(
+                "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors flex-shrink-0 ml-2",
+                day.meals.dinner.completed
+                  ? "bg-[#7CB342] border-[#7CB342]"
+                  : "border-gray-300 dark:border-gray-600"
+              )}
+              aria-pressed={day.meals.dinner.completed}
+              aria-label="Markeer als voltooid"
+            >
               {day.meals.dinner.completed && (
                 <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               )}
-            </div>
+            </button>
           </div>
-        </button>
+        </div>
       </div>
 
       {/* Training - Visually separated section */}
@@ -271,6 +297,17 @@ function DayView({ day }: { day: Day }) {
           </button>
         </div>
       </div>
+
+      {/* Recipe Selection Modal */}
+      <RecipeSelectionModal
+        isOpen={isRecipeModalOpen}
+        onClose={() => {
+          setIsRecipeModalOpen(false);
+          setSelectedMealType(null);
+        }}
+        preselectedDayId={day.id}
+        preselectedMealType={selectedMealType || undefined}
+      />
     </div>
   );
 }
