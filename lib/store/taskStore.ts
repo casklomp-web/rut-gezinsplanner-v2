@@ -20,6 +20,8 @@ import {
 // No mock data - start with empty state
 // Family members will be populated from userStore after auth
 
+
+
 interface TaskState {
   tasks: Task[];
   familyMembers: FamilyMember[];
@@ -224,7 +226,7 @@ export const useTaskStore = create<TaskState>()(
       addFamilyMember: (member) => {
         const newMember: FamilyMember = {
           ...member,
-          id: uuidv4(),
+          id: member.id || uuidv4(),
         };
         
         set(state => ({

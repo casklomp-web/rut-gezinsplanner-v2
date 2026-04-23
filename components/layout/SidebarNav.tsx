@@ -18,8 +18,8 @@ const navItems = [
 export function SidebarNav() {
   const pathname = usePathname();
 
-  // Don't show sidebar on mobile or onboarding
-  if (pathname === '/onboarding') return null;
+  // Don't show sidebar on mobile, onboarding, landing, or auth pages
+  if (pathname === '/onboarding' || pathname === '/landing' || pathname === '/auth' || pathname?.startsWith('/auth/')) return null;
 
   return (
     <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-gray-200 fixed left-0 top-0 bottom-0 z-50">

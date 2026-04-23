@@ -6,6 +6,7 @@ import { cn, formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { Task, TaskPriority, RecurrenceType, FamilyMember, TaskReminder, TaskNotificationPrefs } from '@/lib/types/task';
 import { useTaskStore } from '@/lib/store/taskStore';
+import { useUserStore } from '@/lib/store/userStore';
 import { RecurrenceSelector } from './RecurrenceSelector';
 import { ReminderPicker } from './ReminderPicker';
 
@@ -23,7 +24,11 @@ const priorityOptions: { value: TaskPriority; label: string; color: string }[] =
 
 export function TaskModal({ isOpen, onClose, task }: TaskModalProps) {
   const { familyMembers, createTask, updateTask } = useTaskStore();
+  const { users, currentUser } = useUserStore();
   const isEditMode = !!task;
+  
+  // Use users from userStore as family members for assignment
+  const assignableMembers = users.length > 0 ? users : (currentUser ? [currentUser] : []);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -244,7 +249,7 @@ export function TaskModal({ isOpen, onClose, task }: TaskModalProps) {
                   )}
                 >
                   <option value="">Kies...</option>
-                  {familyMembers.map((member) => (
+                  {assignableMembers.map((member: any) => (
                     <option key={member.id} value={member.id}>
                       {member.name}
                     </option>

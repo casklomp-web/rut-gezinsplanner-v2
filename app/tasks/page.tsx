@@ -5,8 +5,11 @@ import { ClipboardList } from 'lucide-react';
 import { TaskBoard } from '@/components/tasks';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { AuthGuard } from '@/components/auth/AuthGuard';
+import { useSyncFamilyMembers } from '@/hooks/useSyncFamilyMembers';
 
 function TaskPageContent() {
+  useSyncFamilyMembers();
+  
   return (
     <div className="px-4 py-6 w-full">
       {/* Header */}
