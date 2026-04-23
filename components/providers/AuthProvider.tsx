@@ -42,8 +42,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [users.length]);
 
   const login = () => {
+    console.log('login() called, setting rut-onboarding-completed');
     localStorage.setItem('rut-onboarding-completed', 'true');
     setShowAuth(false);
+    console.log('showAuth set to false');
   };
 
   const logout = () => {
@@ -106,6 +108,8 @@ function AuthScreen({ onComplete }: { onComplete: () => void }) {
   };
 
   const handleFinishSetup = () => {
+    console.log('handleFinishSetup called');
+    
     // Create primary user
     addUser({
       id: 'user_' + Date.now(),
@@ -188,6 +192,7 @@ function AuthScreen({ onComplete }: { onComplete: () => void }) {
       });
     });
 
+    console.log('Calling onComplete...');
     onComplete();
   };
 
