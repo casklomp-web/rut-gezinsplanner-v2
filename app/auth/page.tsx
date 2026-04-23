@@ -91,6 +91,10 @@ function AuthPageContent() {
     router.push(`/auth?mode=${newMode}`);
   };
 
+  const handleForgotPassword = () => {
+    router.push('/auth/forgot-password');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#4A90A4]/10 via-[#4A90A4]/5 to-white flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-6">
@@ -247,6 +251,18 @@ function AuthPageContent() {
             </span>
           </button>
         </form>
+
+        {/* Forgot password - only for login */}
+        {!isRegister && (
+          <div className="text-center mt-4">
+            <button
+              onClick={handleForgotPassword}
+              className="text-sm text-gray-500 hover:text-[#4A90A4]"
+            >
+              Wachtwoord vergeten?
+            </button>
+          </div>
+        )}
 
         {/* Toggle mode */}
         <p className="text-center mt-6 text-sm text-gray-600">
