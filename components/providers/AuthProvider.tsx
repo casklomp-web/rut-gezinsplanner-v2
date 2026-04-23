@@ -289,8 +289,10 @@ function AuthScreen({ onComplete }: { onComplete: () => void }) {
           <button
             onClick={() => {
               console.log('Button clicked, going to step 2');
-              window.location.hash = 'step2';
-              setStep('add-members');
+              if (familyName && primaryUser.name) {
+                setStep('add-members');
+                console.log('Step set to add-members');
+              }
             }}
             disabled={!familyName || !primaryUser.name}
             className="w-full py-4 text-lg mt-4 bg-[#4A90A4] text-white rounded-xl font-medium disabled:opacity-50"
