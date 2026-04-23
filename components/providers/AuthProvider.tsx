@@ -288,7 +288,7 @@ function AuthScreen({ onComplete }: { onComplete: () => void }) {
           
           <button
             onClick={handleCreateFamily}
-            onTouchEnd={(e) => {
+            onPointerDown={(e) => {
               e.preventDefault();
               handleCreateFamily();
             }}
