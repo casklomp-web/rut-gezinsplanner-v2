@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useUserStore } from '@/lib/store/userStore';
+import { Button } from '@/components/ui/Button';
 import { ChefHat, Users, ArrowRight } from 'lucide-react';
 
 interface AuthContextType {
