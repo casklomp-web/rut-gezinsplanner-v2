@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useUserStore } from '@/lib/store/userStore';
-import { Button } from '@/components/ui/Button';
 import { ChefHat, Users, ArrowRight } from 'lucide-react';
 
 interface AuthContextType {
@@ -83,10 +82,17 @@ function AuthScreen({ onComplete }: { onComplete: () => void }) {
   const [familyMembers, setFamilyMembers] = useState<string[]>([]);
   const [newMemberName, setNewMemberName] = useState('');
 
+  // Debug: log step changes
+  useEffect(() => {
+    console.log('Step changed to:', step);
+  }, [step]);
+
   const handleCreateFamily = () => {
     console.log('handleCreateFamily called', { familyName, primaryUser: primaryUser.name });
     if (familyName && primaryUser.name) {
+      console.log('Setting step to add-members...');
       setStep('add-members');
+      console.log('Step should now be add-members');
     } else {
       console.log('Button disabled - missing data');
     }
