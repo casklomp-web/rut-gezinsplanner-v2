@@ -4,25 +4,17 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/lib/store/userStore';
 
-export default function HomePage() {
+export default function HomeRedirect() {
   const router = useRouter();
-  const { users } = useUserStore();
+  const { isAuthenticated } = useUserStore();
 
   useEffect(() => {
-    // Check if user needs to authenticate
-    const hasCompletedOnboarding = localStorage.getItem('rut-onboarding-completed');
-    const hasUsers = users.length > 0;
-    
-    console.log('Home check:', { hasCompletedOnboarding, hasUsers, users });
-    
-    if (!hasCompletedOnboarding && !hasUsers) {
-      console.log('No auth, redirecting to /auth');
-      router.push('/auth');
+    if (isAuthenticated()) {
+      router.push('/home');
     } else {
-      console.log('Authenticated, redirecting to /today');
-      router.push('/today');
+      router.push('/landing');
     }
-  }, [users, router]);
+  }, [isAuthenticated, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

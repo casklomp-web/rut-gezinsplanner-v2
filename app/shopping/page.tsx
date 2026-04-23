@@ -4,10 +4,9 @@ import { useWeekStore } from "@/lib/store/weekStore";
 import { ShoppingListSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/ErrorBoundary";
 import { Button } from "@/components/ui/Button";
-import { Check, Copy, ShoppingCart, CalendarDays, FileDown, Trash2 } from "lucide-react";
+import { Check, Copy, ShoppingCart, CalendarDays, Trash2, Plus } from "lucide-react";
 import { useState, useCallback } from "react";
 import { exportShoppingListAsText } from "@/lib/logic/shoppingList";
-import { exportShoppingListToPDF } from "@/lib/logic/pdfExport";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/Toast";
 import { SwipeableItem, PullToRefresh } from "@/components/ui/Swipeable";
@@ -16,10 +15,10 @@ import { isFeatureEnabled } from "@/components/providers/FeatureProvider";
 import { trackEvent, AnalyticsEvents } from "@/components/providers/FeatureProvider";
 import { useOffline } from "@/components/providers/OfflineProvider";
 import { Suspense } from "react";
-import { PriceComparison } from "@/components/features/PriceComparison";
-import { VoiceInputButton } from "@/components/features/VoiceInputButton";
 import { AddIngredientModal } from "@/components/shopping/AddIngredientModal";
 import { ShoppingItem, Ingredient } from "@/lib/types";
+import { isFeatureEnabled as isMVPFeatureEnabled } from "@/lib/features/flags";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 const storeNames: Record<string, string> = {
   aldi: "ALDI",
@@ -51,7 +50,8 @@ function ShoppingPageContent() {
   const { vibrate } = useHaptic();
   const { triggerSync } = useOffline();
   
-  const shoppingList = currentWeek?.shoppingList;
+  // Safe access to shopping list
+  const shoppingList = currentWeek?.shoppingList || null;
 
   const handleRefresh = async () => {
     await triggerSync();
@@ -89,13 +89,22 @@ function ShoppingPageContent() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // MVP: PDF export hidden but preserved
   const exportToPDF = () => {
-    if (!shoppingList) return;
-    exportShoppingListToPDF(shoppingList);
-    toast.success('PDF gegenereerd');
-    trackEvent(AnalyticsEvents.SHOPPING_LIST_EXPORTED, {
-      format: 'pdf',
-      weekNumber: currentWeek?.weekNumber,
+    if (!isMVPFeatureEnabled('PDF_EXPORT')) {
+      toast.info('PDF export komt binnenkort!');
+      return;
+    }
+    // Dynamic import to avoid loading unused code
+    import('@/lib/logic/pdfExport').then(({ exportShoppingListToPDF }) => {
+      if (shoppingList) {
+        exportShoppingListToPDF(shoppingList);
+        toast.success('PDF gegenereerd');
+        trackEvent(AnalyticsEvents.SHOPPING_LIST_EXPORTED, {
+          format: 'pdf',
+          weekNumber: currentWeek?.weekNumber,
+        });
+      }
     });
   };
 
@@ -193,18 +202,6 @@ function ShoppingPageContent() {
           >
             <Plus className="w-5 h-5" />
           </button>
-          <VoiceInputButton
-            onSearch={handleVoiceSearch}
-            size="sm"
-          />
-          <button
-            onClick={exportToPDF}
-            className="p-2 text-[#4A90A4] hover:bg-[#4A90A4]/10 rounded-lg transition-colors"
-            title="Exporteer als PDF"
-            aria-label="Exporteer als PDF"
-          >
-            <FileDown size={20} />
-          </button>
           <button
             onClick={copyToClipboard}
             className="flex items-center gap-1 text-sm text-[#4A90A4] hover:text-[#3a7a8c]"
@@ -243,8 +240,8 @@ function ShoppingPageContent() {
         </div>
       </div>
 
-      {/* Price Comparison */}
-      {currentWeek && (
+      {/* Price Comparison - MVP: Hidden */}
+      {isMVPFeatureEnabled('PRICE_COMPARE') && currentWeek && (
         <PriceComparison
           week={currentWeek}
           priceHistory={[]}
@@ -370,8 +367,10 @@ function ShoppingPageContent() {
 
 export default function ShoppingPage() {
   return (
-    <Suspense fallback={<ShoppingListSkeleton />}>
-      <ShoppingPageContent />
-    </Suspense>
+    <AuthGuard>
+      <Suspense fallback={<ShoppingListSkeleton />}>
+        <ShoppingPageContent />
+      </Suspense>
+    </AuthGuard>
   );
 }

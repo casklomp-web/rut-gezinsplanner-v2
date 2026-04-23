@@ -4,7 +4,7 @@ import { useWeekStore } from "@/lib/store/weekStore";
 import { WeekViewSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/ErrorBoundary";
 import { Button } from "@/components/ui/Button";
-import { RefreshCw, ShoppingCart, CalendarDays, Share2, ChefHat, Plus } from "lucide-react";
+import { RefreshCw, ShoppingCart, CalendarDays, Plus } from "lucide-react";
 import { RecipeSelectionModal } from "@/components/recipes/RecipeSelectionModal";
 import { MealType } from "@/lib/types";
 import { format, parseISO } from "date-fns";
@@ -17,22 +17,24 @@ import { useOffline } from "@/components/providers/OfflineProvider";
 import { isFeatureEnabled } from "@/components/providers/FeatureProvider";
 import { trackEvent, AnalyticsEvents } from "@/components/providers/FeatureProvider";
 import { Suspense, useState, useEffect } from "react";
-import { SocialShareButtons } from "@/components/features/SocialShareButtons";
 import { MealPrepIndicator } from "@/components/features/MealPrepIndicator";
 import { NutritionPanel } from "@/components/features/NutritionPanel";
-import { CollaborativeStatus } from "@/components/features/CollaborativeStatus";
 import { useUserStore } from "@/lib/store/userStore";
 import { meals as defaultMeals } from "@/lib/data/meals";
+import { isFeatureEnabled as isMVPFeatureEnabled } from "@/lib/features/flags";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 function WeekPageContent() {
   const { currentWeek, generateNewWeek, generateShoppingList, isLoading, error } = useWeekStore();
   const { currentUser } = useUserStore();
   const { triggerSync } = useOffline();
-  const [showCollaborative, setShowCollaborative] = useState(false);
   const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
   const [modalDayId, setModalDayId] = useState<string | undefined>(undefined);
   const [modalMealType, setModalMealType] = useState<MealType | undefined>(undefined);
   const [hasTriedGenerate, setHasTriedGenerate] = useState(false);
+  
+  // MVP: Hide collaborative features
+  const showCollaborative = false;
 
   // Auto-generate week if none exists
   useEffect(() => {
@@ -97,65 +99,38 @@ function WeekPageContent() {
               {format(parseISO(currentWeek.startDate), "d MMM", { locale: nl })} - {format(parseISO(currentWeek.endDate), "d MMM", { locale: nl })}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <SocialShareButtons
-              week={currentWeek}
-              type="week"
-              className="!px-3"
-            />
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                if (confirm('Weet je zeker dat je een nieuwe week wilt genereren? De huidige week wordt opgeslagen in je geschiedenis.')) {
-                  generateNewWeek();
-                  trackEvent(AnalyticsEvents.WEEK_GENERATED);
-                  toast.success('Nieuwe week gegenereerd');
-                }
-              }}
-              title="Genereer nieuwe week"
-            >
-              <RefreshCw size={16} className="mr-1" />
-              Nieuwe week
-            </Button>
-          </div>
-        </div>
-
-        {/* Meal Prep Indicator */}
-        <MealPrepIndicator
-          week={currentWeek}
-          mealsData={mealsData}
-          className="mb-4"
-        />
-
-        {/* Nutrition Overview */}
-        <NutritionPanel
-          week={currentWeek}
-          mealsData={mealsData}
-          variant="compact"
-          className="mb-4"
-        />
-
-        {/* Collaborative Toggle */}
-        <div className="flex items-center gap-2 mb-4">
-          <button
-            onClick={() => setShowCollaborative(!showCollaborative)}
-            className="w-10 h-10 rounded-full bg-[#4A90A4]/10 text-[#4A90A4] hover:bg-[#4A90A4]/20 flex items-center justify-center transition-colors"
-            title={showCollaborative ? 'Verberg wie wat doet' : 'Toon wie wat doet'}
-            aria-label={showCollaborative ? 'Verberg samenwerking' : 'Toon samenwerking'}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              if (confirm('Weet je zeker dat je een nieuwe week wilt genereren? De huidige week wordt opgeslagen in je geschiedenis.')) {
+                generateNewWeek();
+                trackEvent(AnalyticsEvents.WEEK_GENERATED);
+                toast.success('Nieuwe week gegenereerd');
+              }
+            }}
+            title="Genereer nieuwe week"
           >
-            <Share2 className="w-5 h-5" />
-          </button>
-          <span className="text-sm text-gray-600">
-            {showCollaborative ? 'Samenwerking zichtbaar' : 'Samenwerking'}
-          </span>
+            <RefreshCw size={16} className="mr-1" />
+            Nieuwe week
+          </Button>
         </div>
 
-        {/* Collaborative Status */}
-        {showCollaborative && currentUser && (
-          <CollaborativeStatus
+        {/* Meal Prep Indicator - MVP: Keep this, it's useful */}
+        {isMVPFeatureEnabled('MEAL_PREP_INDICATOR') && (
+          <MealPrepIndicator
             week={currentWeek}
-            currentUser={currentUser}
+            mealsData={mealsData}
+            className="mb-4"
+          />
+        )}
+
+        {/* Nutrition Overview - MVP: Minimal */}
+        {isMVPFeatureEnabled('NUTRITION_PANEL') && (
+          <NutritionPanel
+            week={currentWeek}
+            mealsData={mealsData}
+            variant="compact"
             className="mb-4"
           />
         )}
@@ -224,8 +199,10 @@ function WeekPageContent() {
 
 export default function WeekPage() {
   return (
-    <Suspense fallback={<WeekViewSkeleton />}>
-      <WeekPageContent />
-    </Suspense>
+    <AuthGuard>
+      <Suspense fallback={<WeekViewSkeleton />}>
+        <WeekPageContent />
+      </Suspense>
+    </AuthGuard>
   );
 }

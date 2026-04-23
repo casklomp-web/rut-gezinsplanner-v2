@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { ClipboardList } from 'lucide-react';
 import { TaskBoard } from '@/components/tasks';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
 function TaskPageContent() {
   return (
@@ -30,8 +31,10 @@ function TaskPageContent() {
 
 export default function TasksPage() {
   return (
-    <Suspense fallback={<Skeleton />}> 
-      <TaskPageContent />
-    </Suspense>
+    <AuthGuard>
+      <Suspense fallback={<Skeleton />}>
+        <TaskPageContent />
+      </Suspense>
+    </AuthGuard>
   );
 }

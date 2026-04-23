@@ -2,25 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, ShoppingCart, ChefHat, User, ClipboardList } from "lucide-react";
+import { Home, Calendar, ShoppingCart, User, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHaptic, HAPTIC_PATTERNS } from "@/components/providers/HapticProvider";
 
 const navItems = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/today", label: "Vandaag", icon: Calendar },
+  { href: "/home", label: "Home", icon: Home },
+  { href: "/today", label: "Dag", icon: Calendar },
   { href: "/week", label: "Week", icon: ClipboardList },
-  { href: "/tasks", label: "Taken", icon: ClipboardList },
   { href: "/shopping", label: "Boodschappen", icon: ShoppingCart },
-  { href: "/recipes", label: "Recepten", icon: ChefHat },
+  { href: "/tasks", label: "Taken", icon: ClipboardList },
+  { href: "/profile", label: "Profiel", icon: User },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
   const { vibrate } = useHaptic();
 
-  // Don't show nav on onboarding
-  if (pathname === '/onboarding') return null;
+  // Don't show nav on onboarding, auth, or landing
+  if (pathname === '/onboarding' || pathname === '/auth' || pathname === '/landing' || pathname === '/') return null;
 
   const handleNavClick = () => {
     vibrate(HAPTIC_PATTERNS.LIGHT);

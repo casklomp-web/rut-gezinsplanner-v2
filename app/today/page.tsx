@@ -12,13 +12,14 @@ import { useHaptic, HAPTIC_PATTERNS } from "@/components/providers/HapticProvide
 import { trackEvent, AnalyticsEvents } from "@/components/providers/FeatureProvider";
 import { cn } from "@/lib/utils";
 import { Day, MealType } from "@/lib/types";
-import { CalendarDays, Sparkles, ChevronLeft, ChevronRight, Mic, ChefHat } from "lucide-react";
+import { CalendarDays, Sparkles, ChevronLeft, ChevronRight, ChefHat } from "lucide-react";
 import { NutritionPanel } from "@/components/features/NutritionPanel";
-import { VoiceInputButton } from "@/components/features/VoiceInputButton";
 import { MealPrepIndicator, PrepDayBadge } from "@/components/features/MealPrepIndicator";
 import { meals as defaultMeals } from "@/lib/data/meals";
 import { useUserStore } from "@/lib/store/userStore";
 import { RecipeSelectionModal } from "@/components/recipes/RecipeSelectionModal";
+import { isFeatureEnabled } from "@/lib/features/flags";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 // Day view component
 function DayView({ day }: { day: Day }) {
@@ -322,11 +323,8 @@ function TodayPageContent() {
   const { vibrate } = useHaptic();
   
   useEffect(() => {
-    // Check if user has seen onboarding
-    const hasSeenOnboarding = localStorage.getItem('rut-onboarding-completed');
-    if (!hasSeenOnboarding && !currentWeek) {
-      setShowOnboarding(true);
-    }
+    // MVP: Skip onboarding, mark as completed
+    localStorage.setItem('rut-onboarding-completed', 'true');
     
     // Generate week if needed
     if (!currentWeek) {
@@ -345,13 +343,12 @@ function TodayPageContent() {
   }, [currentWeek, selectedDayIndex]);
   
   const handleOnboardingComplete = () => {
-    localStorage.setItem('rut-onboarding-completed', 'true');
+    // MVP: Onboarding skipped
     setShowOnboarding(false);
     generateNewWeek();
   };
   
   const handleOnboardingSkip = () => {
-    localStorage.setItem('rut-onboarding-completed', 'true');
     setShowOnboarding(false);
   };
 
@@ -369,11 +366,12 @@ function TodayPageContent() {
     }
   };
 
+  // MVP: Voice commands hidden but preserved
   const handleVoiceCommand = (command: string) => {
-    // Handle voice commands for planning
-    if (command.toLowerCase().includes('plan')) {
-      // Navigate to week view for planning
-      window.location.href = '/week';
+    if (isFeatureEnabled('VOICE_INPUT')) {
+      if (command.toLowerCase().includes('plan')) {
+        window.location.href = '/week';
+      }
     }
   };
   
@@ -436,10 +434,6 @@ function TodayPageContent() {
             )}
           </div>
           <div className="flex items-center gap-1">
-            <VoiceInputButton
-              onSearch={handleVoiceCommand}
-              size="sm"
-            />
             <button
               onClick={handlePrevDay}
               disabled={!canGoPrev}
@@ -473,12 +467,14 @@ function TodayPageContent() {
         </h1>
       </header>
 
-      {/* Meal Prep Indicator for Week */}
-      <MealPrepIndicator
-        week={currentWeek}
-        mealsData={mealsData}
-        className="mb-4"
-      />
+      {/* Meal Prep Indicator for Week - MVP: Keep this */}
+      {isFeatureEnabled('MEAL_PREP_INDICATOR') && (
+        <MealPrepIndicator
+          week={currentWeek}
+          mealsData={mealsData}
+          className="mb-4"
+        />
+      )}
 
       {/* Dag overzicht */}
       <DayView day={selectedDay} />
@@ -488,8 +484,10 @@ function TodayPageContent() {
 
 export default function TodayPage() {
   return (
-    <Suspense fallback={<DayViewSkeleton />}>
-      <TodayPageContent />
-    </Suspense>
+    <AuthGuard>
+      <Suspense fallback={<DayViewSkeleton />}>
+        <TodayPageContent />
+      </Suspense>
+    </AuthGuard>
   );
 }

@@ -1,23 +1,43 @@
 'use client';
 
-import { useState, Suspense } from 'react';
-import { User, Settings, Bell, Moon, Sun, Keyboard, HelpCircle, ChevronRight } from 'lucide-react';
+import { useState, Suspense, useEffect } from 'react';
+import { User, Settings, Bell, Moon, Sun, LogOut, ChevronRight, Users, Shield } from 'lucide-react';
 import { useHaptic, HAPTIC_PATTERNS } from '@/components/providers/HapticProvider';
-import { useKeyboardShortcutsHelp } from '@/components/providers/KeyboardShortcutsProvider';
 import { toast } from '@/components/ui/Toast';
 import { cn } from '@/lib/utils';
-import { isFeatureEnabled } from '@/components/providers/FeatureProvider';
+import { useUserStore } from '@/lib/store/userStore';
+import { useRouter } from 'next/navigation';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
 function ProfilePageContent() {
+  const router = useRouter();
   const { vibrate } = useHaptic();
-  const { shortcuts } = useKeyboardShortcutsHelp();
-  const [showShortcuts, setShowShortcuts] = useState(false);
+  const { currentUser, logoutUser, isAuthenticated } = useUserStore();
   const [notifications, setNotifications] = useState({
     push: true,
     email: false,
     weekly: true,
   });
   const [darkMode, setDarkMode] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push('/landing');
+    }
+  }, [isAuthenticated, router]);
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-[#4A90A4]">Laden...</div>
+      </div>
+    );
+  }
+
+  // Get family name from user (stored in auth flow)
+  const familyName = (currentUser as any).familyName || 'Mijn gezin';
 
   const handleToggleNotifications = (key: keyof typeof notifications) => {
     vibrate(HAPTIC_PATTERNS.LIGHT);
@@ -31,9 +51,11 @@ function ProfilePageContent() {
     toast.info('Donkere modus komt binnenkort!');
   };
 
-  const handleShowShortcuts = () => {
-    vibrate(HAPTIC_PATTERNS.LIGHT);
-    setShowShortcuts(true);
+  const handleLogout = () => {
+    vibrate(HAPTIC_PATTERNS.MEDIUM);
+    logoutUser();
+    toast.success('Je bent uitgelogd');
+    router.push('/landing');
   };
 
   return (
@@ -41,7 +63,7 @@ function ProfilePageContent() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[#2D3436]">Profiel</h1>
-        <p className="text-sm text-gray-500">Beheer je instellingen</p>
+        <p className="text-sm text-gray-500">Beheer je account en instellingen</p>
       </div>
 
       {/* User card */}
@@ -50,9 +72,10 @@ function ProfilePageContent() {
           <div className="w-16 h-16 bg-[#4A90A4]/10 rounded-full flex items-center justify-center">
             <User className="w-8 h-8 text-[#4A90A4]" />
           </div>
-          <div>
-            <h2 className="font-semibold text-[#2D3436]">Gebruiker</h2>
-            <p className="text-sm text-gray-500">Familie account</p>
+          <div className="flex-1">
+            <h2 className="font-semibold text-[#2D3436]">{currentUser.name}</h2>
+            <p className="text-sm text-gray-500">{(currentUser as any).email}</p>
+            <p className="text-xs text-gray-400 mt-1">{familyName}</p>
           </div>
         </div>
       </div>
@@ -142,40 +165,53 @@ function ProfilePageContent() {
           </div>
         </section>
 
-        {/* Keyboard shortcuts */}
-        {isFeatureEnabled('ENABLE_KEYBOARD_SHORTCUTS') && (
-          <section>
-            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-              <Keyboard className="w-4 h-4" />
-              Sneltoetsen
-            </h3>
-            <button
-              onClick={handleShowShortcuts}
-              className="w-full bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-            >
-              <span>Bekijk alle sneltoetsen</span>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </button>
-          </section>
-        )}
-
-        {/* Help */}
+        {/* Household */}
         <section>
           <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-            <HelpCircle className="w-4 h-4" />
-            Help
+            <Users className="w-4 h-4" />
+            Huishouden
           </h3>
           <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
-            <button className="w-full text-left p-4 hover:bg-gray-50 transition-colors">
-              Veelgestelde vragen
+            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <span>Gezinsleden beheren</span>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
             </button>
-            <button className="w-full text-left p-4 hover:bg-gray-50 transition-colors">
-              Contact opnemen
-            </button>
-            <button className="w-full text-left p-4 hover:bg-gray-50 transition-colors">
-              Privacy beleid
+            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <span>Uitnodigingen</span>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
             </button>
           </div>
+        </section>
+
+        {/* Security */}
+        <section>
+          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+            <Shield className="w-4 h-4" />
+            Beveiliging
+          </h3>
+          <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <span>Wachtwoord wijzigen</span>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+        </section>
+
+        {/* Logout */}
+        <section>
+          <button
+            onClick={() => setShowLogoutConfirm(true)}
+            className="w-full flex items-center justify-center gap-2 p-4 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Uitloggen</span>
+          </button>
         </section>
 
         {/* App info */}
@@ -185,37 +221,32 @@ function ProfilePageContent() {
         </div>
       </div>
 
-      {/* Shortcuts modal */}
-      {showShortcuts && (
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
         <div
           className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-          onClick={() => setShowShortcuts(false)}
+          onClick={() => setShowLogoutConfirm(false)}
         >
           <div
-            className="bg-white rounded-2xl w-full max-w-sm max-h-[80vh] overflow-y-auto"
+            className="bg-white rounded-2xl w-full max-w-sm p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold">Sneltoetsen</h2>
-            </div>
-            <div className="p-4">
-              <div className="space-y-3">
-                {shortcuts.map((shortcut, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <kbd className="px-2 py-1 bg-gray-100 rounded text-sm font-mono">
-                      {shortcut.key}
-                    </kbd>
-                    <span className="text-sm text-gray-600">{shortcut.description}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">Uitloggen?</h2>
+            <p className="text-gray-600 mb-6">
+              Weet je zeker dat je wilt uitloggen? Je moet opnieuw inloggen om je gegevens te zien.
+            </p>
+            <div className="flex gap-3">
               <button
-                onClick={() => setShowShortcuts(false)}
-                className="w-full py-2 bg-[#4A90A4] text-white rounded-lg hover:bg-[#3a7a8c] transition-colors"
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
               >
-                Sluiten
+                Annuleren
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 py-3 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition-colors"
+              >
+                Uitloggen
               </button>
             </div>
           </div>
@@ -227,8 +258,10 @@ function ProfilePageContent() {
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={<div className="px-4 py-6 w-full">Laden...</div>}>
-      <ProfilePageContent />
-    </Suspense>
+    <AuthGuard>
+      <Suspense fallback={<div className="px-4 py-6 w-full">Laden...</div>}>
+        <ProfilePageContent />
+      </Suspense>
+    </AuthGuard>
   );
 }

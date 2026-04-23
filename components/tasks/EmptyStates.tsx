@@ -74,11 +74,11 @@ export function NoTasksEmptyState({ onCreate }: { onCreate: () => void }) {
     <EmptyState
       icon={ClipboardList}
       title="Nog geen taken"
-      description="Maak je eerste taak om te beginnen met het organiseren van je gezin"
+      description="Je hebt nog geen taken aangemaakt. Voeg je eerste taak toe om te beginnen."
       action={
         <Button onClick={onCreate}>
           <Plus className="w-4 h-4 mr-2" />
-          Eerste taak maken
+          Taak toevoegen
         </Button>
       }
     />

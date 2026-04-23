@@ -17,74 +17,8 @@ import {
   TaskError 
 } from "@/lib/tasks/errors";
 
-// Mock family members for development
-const mockFamilyMembers: FamilyMember[] = [
-  { id: "1", name: "Papa", color: "#4A90A4", role: "parent" },
-  { id: "2", name: "Mama", color: "#E17055", role: "parent" },
-  { id: "3", name: "Kids", color: "#7CB342", role: "child" },
-];
-
-// Mock tasks for development
-const mockTasks: Task[] = [
-  {
-    id: "task-1",
-    title: "Boodschappen doen",
-    description: "Groente, fruit en melk halen bij de Albert Heijn",
-    status: "todo",
-    priority: "high",
-    assignedTo: "1",
-    assignedBy: "2",
-    dueDate: new Date().toISOString().split("T")[0],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    recurrence: { type: "none" },
-    notifications: { push: true, telegram: false, email: false },
-    completions: [],
-    tags: ["boodschappen"],
-    isArchived: false,
-  },
-  {
-    id: "task-2",
-    title: "Meal prep zondag",
-    description: "Voorbereiden van maaltijden voor de hele week",
-    status: "todo",
-    priority: "medium",
-    assignedTo: "2",
-    assignedBy: "1",
-    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    recurrence: { type: "weekly" },
-    notifications: { push: true, telegram: false, email: false },
-    completions: [],
-    tags: ["meal-prep"],
-    isArchived: false,
-  },
-  {
-    id: "task-3",
-    title: "Afval buiten zetten",
-    description: "Grijze container aan de straat",
-    status: "done",
-    priority: "low",
-    assignedTo: "1",
-    assignedBy: "1",
-    dueDate: new Date().toISOString().split("T")[0],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    recurrence: { type: "weekly" },
-    notifications: { push: false, telegram: false, email: false },
-    completions: [
-      {
-        id: "comp-1",
-        completedAt: new Date(),
-        completedBy: "1",
-        notes: "Gedaan om 8:00",
-      },
-    ],
-    tags: ["huishouden"],
-    isArchived: false,
-  },
-];
+// No mock data - start with empty state
+// Family members will be populated from userStore after auth
 
 interface TaskState {
   tasks: Task[];
@@ -127,7 +61,7 @@ export const useTaskStore = create<TaskState>()(
   persist(
     (set, get) => ({
       tasks: [],
-      familyMembers: mockFamilyMembers,
+      familyMembers: [], // Start empty, populate from userStore after auth
       isLoading: false,
       error: null,
       filters: {},
