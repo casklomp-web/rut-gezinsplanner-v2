@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { TaskCard } from './TaskCard';
 import { TaskModal } from './TaskModal';
+import { SwipeableTaskCard } from './DragToAssign';
 import { useTaskStore } from '@/lib/store/taskStore';
 import { Task, TaskStatus } from '@/lib/types/task';
 import { NoTasksEmptyState, NoSearchResultsEmptyState, AllTasksCompletedEmptyState, NoOverdueTasksEmptyState } from './EmptyStates';
@@ -198,11 +199,9 @@ export function TaskBoard() {
         ) : (
           filteredTasks.map((task) => (
             <div key={task.id} className="lg:flex-shrink-0 lg:w-80 lg:snap-start">
-              <TaskCard
+              <SwipeableTaskCard
                 task={task}
                 onEdit={handleEditTask}
-                expanded={expandedTaskId === task.id}
-                onToggleExpand={() => handleToggleExpand(task.id)}
               />
             </div>
           ))

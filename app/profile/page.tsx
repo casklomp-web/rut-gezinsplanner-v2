@@ -12,21 +12,38 @@ import { AuthGuard } from '@/components/auth/AuthGuard';
 function ProfilePageContent() {
   const router = useRouter();
   const { vibrate } = useHaptic();
-  const { currentUser, logoutUser, isAuthenticated } = useUserStore();
+  const { currentUser, logoutUser, isAuthenticated, updateUser, users } = useUserStore();
   const [notifications, setNotifications] = useState({
-    push: true,
-    email: false,
-    weekly: true,
+    push: currentUser?.preferences?.notifications?.push ?? false,
+    email: currentUser?.preferences?.notifications?.email ?? false,
+    weekly: currentUser?.preferences?.notifications?.weekly ?? true,
   });
   const [darkMode, setDarkMode] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [editName, setEditName] = useState(currentUser?.name || '');
+  const [editEmail, setEditEmail] = useState((currentUser as any)?.email || '');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
   // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated()) {
       router.push('/landing');
+      return;
     }
-  }, [isAuthenticated, router]);
+    
+    // Load notification preferences from user
+    if (currentUser?.preferences?.notifications) {
+      setNotifications({
+        push: currentUser.preferences.notifications.push ?? false,
+        email: currentUser.preferences.notifications.email ?? false,
+        weekly: currentUser.preferences.notifications.weekly ?? true,
+      });
+    }
+  }, [isAuthenticated, router, currentUser]);
 
   if (!currentUser) {
     return (
@@ -39,10 +56,37 @@ function ProfilePageContent() {
   // Get family name from user (stored in auth flow)
   const familyName = (currentUser as any).familyName || 'Mijn gezin';
 
-  const handleToggleNotifications = (key: keyof typeof notifications) => {
+  const handleToggleNotifications = async (key: keyof typeof notifications) => {
     vibrate(HAPTIC_PATTERNS.LIGHT);
-    setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
-    toast.success(`${key} notificaties ${notifications[key] ? 'uit' : 'aan'}`);
+    const newValue = !notifications[key];
+    
+    if (key === 'push' && newValue) {
+      // Request permission
+      if ('Notification' in window) {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          toast.error('Notificatie toestemming geweigerd');
+          return;
+        }
+      }
+    }
+    
+    setNotifications(prev => ({ ...prev, [key]: newValue }));
+    
+    // Save to user preferences
+    if (currentUser) {
+      updateUser(currentUser.id, {
+        preferences: {
+          ...currentUser.preferences,
+          notifications: {
+            ...currentUser.preferences?.notifications,
+            [key]: newValue
+          }
+        }
+      } as any);
+    }
+    
+    toast.success(`${key === 'push' ? 'Push' : key === 'email' ? 'E-mail' : 'Wekelijkse'} notificaties ${newValue ? 'aan' : 'uit'}`);
   };
 
   const handleToggleDarkMode = () => {
@@ -56,6 +100,34 @@ function ProfilePageContent() {
     logoutUser();
     toast.success('Je bent uitgelogd');
     router.push('/landing');
+  };
+
+  const handleSaveProfile = () => {
+    if (currentUser) {
+      updateUser(currentUser.id, { 
+        name: editName,
+        email: editEmail 
+      } as any);
+      toast.success('Profiel bijgewerkt');
+      setShowEditProfile(false);
+    }
+  };
+
+  const handleChangePassword = () => {
+    if (newPassword !== confirmNewPassword) {
+      toast.error('Wachtwoorden komen niet overeen');
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error('Wachtwoord moet minimaal 6 tekens zijn');
+      return;
+    }
+    // In real app, verify current password first
+    toast.success('Wachtwoord gewijzigd');
+    setShowChangePassword(false);
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmNewPassword('');
   };
 
   return (
@@ -165,6 +237,25 @@ function ProfilePageContent() {
           </div>
         </section>
 
+        {/* Account */}
+        <section>
+          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+            <User className="w-4 h-4" />
+            Account
+          </h3>
+          <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+            <button 
+              onClick={() => setShowEditProfile(true)}
+              className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <span>Profiel bewerken</span>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+        </section>
+
         {/* Household */}
         <section>
           <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
@@ -194,7 +285,10 @@ function ProfilePageContent() {
             Beveiliging
           </h3>
           <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
-            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+            <button 
+              onClick={() => setShowChangePassword(true)}
+              className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+            >
               <div className="flex items-center gap-3">
                 <span>Wachtwoord wijzigen</span>
               </div>
@@ -220,6 +314,113 @@ function ProfilePageContent() {
           <p>© 2025 Rut App</p>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      {showEditProfile && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowEditProfile(false)}
+        >
+          <div
+            className="bg-white rounded-2xl w-full max-w-sm p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Profiel bewerken</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Naam</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4A90A4]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+                <input
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4A90A4]"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowEditProfile(false)}
+                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
+              >
+                Annuleren
+              </button>
+              <button
+                onClick={handleSaveProfile}
+                className="flex-1 py-3 bg-[#4A90A4] text-white rounded-xl font-medium hover:bg-[#3a7a8c]"
+              >
+                Opslaan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Change Password Modal */}
+      {showChangePassword && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowChangePassword(false)}
+        >
+          <div
+            className="bg-white rounded-2xl w-full max-w-sm p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Wachtwoord wijzigen</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Huidig wachtwoord</label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4A90A4]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nieuw wachtwoord</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4A90A4]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bevestig nieuw wachtwoord</label>
+                <input
+                  type="password"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4A90A4]"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowChangePassword(false)}
+                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
+              >
+                Annuleren
+              </button>
+              <button
+                onClick={handleChangePassword}
+                className="flex-1 py-3 bg-[#4A90A4] text-white rounded-xl font-medium hover:bg-[#3a7a8c]"
+              >
+                Wijzigen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (

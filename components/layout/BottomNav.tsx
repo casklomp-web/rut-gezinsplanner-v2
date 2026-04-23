@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, ShoppingCart, User, ClipboardList } from "lucide-react";
+import { Home, Calendar, ShoppingCart, User, ClipboardList, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHaptic, HAPTIC_PATTERNS } from "@/components/providers/HapticProvider";
+import { useNotificationStore } from "@/lib/store/notificationStore";
+import { useUserStore } from "@/lib/store/userStore";
 
 const navItems = [
   { href: "/home", label: "Home", icon: Home },
@@ -12,12 +14,16 @@ const navItems = [
   { href: "/week", label: "Week", icon: ClipboardList },
   { href: "/shopping", label: "Boodschappen", icon: ShoppingCart },
   { href: "/tasks", label: "Taken", icon: ClipboardList },
+  { href: "/notifications", label: "Meldingen", icon: Bell, showBadge: true },
   { href: "/profile", label: "Profiel", icon: User },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
   const { vibrate } = useHaptic();
+  const { currentUser } = useUserStore();
+  const { getUnreadCount } = useNotificationStore();
+  const unreadCount = currentUser ? getUnreadCount(currentUser.id) : 0;
 
   // Don't show nav on onboarding, auth, or landing
   if (pathname === '/onboarding' || pathname === '/auth' || pathname === '/landing' || pathname === '/') return null;
@@ -43,7 +49,7 @@ export function BottomNav() {
               href={item.href}
               onClick={handleNavClick}
               className={cn(
-                "flex flex-col items-center justify-center w-full h-full transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#4A90A4]",
+                "flex flex-col items-center justify-center w-full h-full transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#4A90A4] relative",
                 isActive 
                   ? "text-[#4A90A4]" 
                   : "text-gray-400 hover:text-gray-600"
@@ -51,12 +57,19 @@ export function BottomNav() {
               aria-current={isActive ? 'page' : undefined}
               aria-label={item.label}
             >
-              <Icon
-                size={20}
-                strokeWidth={isActive ? 2.5 : 2}
-                className="mb-0.5"
-                aria-hidden="true"
-              />
+              <div className="relative">
+                <Icon
+                  size={20}
+                  strokeWidth={isActive ? 2.5 : 2}
+                  className="mb-0.5"
+                  aria-hidden="true"
+                />
+                {(item as any).showBadge && unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </div>
               <span className="text-[10px] font-medium">{item.label}</span>
             </Link>
           );
