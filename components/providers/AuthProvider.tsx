@@ -271,16 +271,16 @@ function AuthScreen({ onComplete }: { onComplete: () => void }) {
             />
           </div>
           
-          <Button 
+          <button
             onClick={handleCreateFamily}
-            onTouchStart={handleCreateFamily}
-            className="w-full py-4 text-lg mt-4"
             disabled={!familyName || !primaryUser.name}
-            type="button"
+            className="w-full py-4 text-lg mt-4 bg-[#4A90A4] text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all"
           >
-            Volgende
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
+            <span className="flex items-center justify-center">
+              Volgende
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </span>
+          </button>
         </div>
       </div>
     </div>
