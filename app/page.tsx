@@ -2,31 +2,34 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useWeekStore } from '@/lib/store/weekStore';
-import { Button } from '@/components/ui/Button';
-import { CalendarDays, ChefHat, ShoppingCart, Users, ArrowRight } from 'lucide-react';
-import { trackEvent, AnalyticsEvents } from '@/components/providers/FeatureProvider';
+import { useUserStore } from '@/lib/store/userStore';
 
-export default function LandingPage() {
+export default function HomePage() {
   const router = useRouter();
-  const { currentWeek, generateNewWeek, isLoading } = useWeekStore();
+  const { users } = useUserStore();
 
-  const handleStart = () => {
-    trackEvent(AnalyticsEvents.WEEK_GENERATED, { source: 'landing_page' });
-    if (!currentWeek) {
-      generateNewWeek();
+  useEffect(() => {
+    // Check if user needs to authenticate
+    const hasCompletedOnboarding = localStorage.getItem('rut-onboarding-completed');
+    const hasUsers = users.length > 0;
+    
+    console.log('Home check:', { hasCompletedOnboarding, hasUsers, users });
+    
+    if (!hasCompletedOnboarding && !hasUsers) {
+      console.log('No auth, redirecting to /auth');
+      router.push('/auth');
+    } else {
+      console.log('Authenticated, redirecting to /today');
+      router.push('/today');
     }
-    router.push('/today');
-  };
+  }, [users, router]);
 
-  // Show loading while checking
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#4A90A4]/5 to-white">
-        <div className="animate-pulse text-[#4A90A4]">Laden...</div>
-      </div>
-    );
-  }
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-[#4A90A4]">Laden...</div>
+    </div>
+  );
+}
 
   // Landing page
   return (
