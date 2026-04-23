@@ -94,8 +94,11 @@ function AuthScreen({ onComplete }: { onComplete: () => void }) {
     console.log('handleCreateFamily called', { familyName, primaryUser: primaryUser.name });
     if (familyName && primaryUser.name) {
       console.log('Setting step to add-members...');
-      setStep('add-members');
-      console.log('Step should now be add-members');
+      // Force immediate state update
+      setStep(prev => {
+        console.log('Previous step:', prev, '-> new step: add-members');
+        return 'add-members';
+      });
     } else {
       console.log('Button disabled - missing data');
     }
