@@ -288,6 +288,10 @@ function AuthScreen({ onComplete }: { onComplete: () => void }) {
           
           <button
             onClick={handleCreateFamily}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              handleCreateFamily();
+            }}
             disabled={!familyName || !primaryUser.name}
             className="w-full py-4 text-lg mt-4 bg-[#4A90A4] text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all"
           >
