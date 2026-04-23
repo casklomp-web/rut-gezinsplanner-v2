@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Button</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="padding: 20px; font-family: Arial;">
+    <h1>Button Test</h1>
+    <input type="text" id="name" placeholder="Naam" style="padding: 10px; margin: 5px; width: 200px;"><br>
+    <input type="text" id="family" placeholder="Gezin" style="padding: 10px; margin: 5px; width: 200px;"><br>
+    <button onclick="handleClick()" style="padding: 15px 30px; background: #4A90A4; color: white; border: none; border-radius: 8px; margin-top: 10px;">
+        Volgende
+    </button>
+    <div id="log" style="margin-top: 20px; padding: 10px; background: #f0f0f0;"></div>
+
+    <script>
+        function log(msg) {
+            console.log(msg);
+            document.getElementById('log').innerHTML += msg + '<br>';
+        }
+
+        function handleClick() {
+            log('Button clicked!');
+            const name = document.getElementById('name').value;
+            const family = document.getElementById('family').value;
+            log('Name: ' + name);
+            log('Family: ' + family);
+            
+            if (name && family) {
+                log('SUCCESS - Both fields filled!');
+                alert('Knop werkt! Naam: ' + name + ', Gezin: ' + family);
+            } else {
+                log('ERROR - Missing fields');
+                alert('Vul beide velden in');
+            }
+        }
+    </script>
+</body>
+</html>
